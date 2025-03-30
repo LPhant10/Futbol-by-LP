@@ -118,7 +118,7 @@ class _MatchScreenState extends State<MatchScreen> {
     String seconds = (timeLeft % 60).toString().padLeft(2, '0');
     return Scaffold(
       appBar: AppBar(
-        title: Text("Partido"),
+        title: Text("⚽ JUGANDO ⚽" ,style: TextStyle(color: Colors.white),),
         backgroundColor: Colors.red,
       ),
       body: Padding(

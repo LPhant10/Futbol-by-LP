@@ -91,7 +91,8 @@ class _GeneratedTeamsScreenState extends State<GeneratedTeamsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("⚽ Equipos Generados ⚽ "),
+        title: Text("⚽ Equipos Generados ⚽ ", style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.orange,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(12),
