@@ -1,4 +1,5 @@
 // Aquí se implementa la pantalla del partido con cronómetro, goles, puntos y reproducción de audio
+
 import 'dart:async';
 import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
@@ -21,7 +22,6 @@ class _MatchScreenState extends State<MatchScreen> {
   int pointsTeam2 = 0;
   int pointsTeam3 = 0;
 
-  // Método para reproducir el sonido desde assets usando la nueva API
   Future<void> playSound(String assetName) async {
     final player = AudioPlayer();
     await player.play(AssetSource(assetName));
@@ -30,7 +30,7 @@ class _MatchScreenState extends State<MatchScreen> {
   void startTimer() {
     // Reproducir sonido al iniciar el partido
     playSound('silvato.mp3');
-    if (timer != null) timer!.cancel();
+    timer?.cancel();
     setState(() {
       timeLeft = 600;
     });
@@ -46,31 +46,26 @@ class _MatchScreenState extends State<MatchScreen> {
   }
 
   void endMatch() {
-    if (timer != null) timer!.cancel();
-
+    timer?.cancel();
     // Reproducir sonido al finalizar el partido
     playSound('silvato.mp3');
 
     int winner = 0; // 1 para Equipo1, 2 para Equipo2, 3 para Equipo3; 0 para empate
-    // Lógica para determinar ganador:
     if (goalsTeam1 >= 2 || goalsTeam2 >= 2 || goalsTeam3 >= 2) {
       int maxGoals = max(goalsTeam1, max(goalsTeam2, goalsTeam3));
-      if (goalsTeam1 == maxGoals) {
+      if (goalsTeam1 == maxGoals)
         winner = 1;
-      } else if (goalsTeam2 == maxGoals) {
+      else if (goalsTeam2 == maxGoals)
         winner = 2;
-      } else if (goalsTeam3 == maxGoals) {
+      else if (goalsTeam3 == maxGoals)
         winner = 3;
-      }
     } else {
       int maxGoals = max(goalsTeam1, max(goalsTeam2, goalsTeam3));
       List<int> winners = [];
       if (goalsTeam1 == maxGoals) winners.add(1);
       if (goalsTeam2 == maxGoals) winners.add(2);
       if (goalsTeam3 == maxGoals) winners.add(3);
-      if (winners.length == 1) {
-        winner = winners.first;
-      }
+      if (winners.length == 1) winner = winners.first;
     }
 
     String message;
@@ -82,7 +77,8 @@ class _MatchScreenState extends State<MatchScreen> {
         pointsTeam1++;
       else if (winner == 2)
         pointsTeam2++;
-      else if (winner == 3) pointsTeam3++;
+      else if (winner == 3)
+        pointsTeam3++;
     }
 
     showDialog(
@@ -112,7 +108,7 @@ class _MatchScreenState extends State<MatchScreen> {
 
   @override
   void dispose() {
-    if (timer != null) timer!.cancel();
+    timer?.cancel();
     super.dispose();
   }
 
@@ -147,9 +143,7 @@ class _MatchScreenState extends State<MatchScreen> {
                           setState(() {
                             goalsTeam1++;
                           });
-                          if (goalsTeam1 >= 2) {
-                            endMatch();
-                          }
+                          if (goalsTeam1 >= 2) endMatch();
                         },
                         child: Text("+1 GOL"))
                   ],
@@ -163,9 +157,7 @@ class _MatchScreenState extends State<MatchScreen> {
                           setState(() {
                             goalsTeam2++;
                           });
-                          if (goalsTeam2 >= 2) {
-                            endMatch();
-                          }
+                          if (goalsTeam2 >= 2) endMatch();
                         },
                         child: Text("+1 GOL"))
                   ],
@@ -179,9 +171,7 @@ class _MatchScreenState extends State<MatchScreen> {
                           setState(() {
                             goalsTeam3++;
                           });
-                          if (goalsTeam3 >= 2) {
-                            endMatch();
-                          }
+                          if (goalsTeam3 >= 2) endMatch();
                         },
                         child: Text("+1 GOL"))
                   ],

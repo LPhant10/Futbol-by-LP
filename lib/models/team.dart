@@ -7,4 +7,24 @@ class Team {
 
   Team({List<Player>? players, this.totalScore = 0, this.goalkeeper})
       : players = players ?? [];
+
+  Map<String, dynamic> toJson() {
+    return {
+      'players': players.map((p) => p.toJson()).toList(),
+      'totalScore': totalScore,
+      'goalkeeper': goalkeeper?.toJson(),
+    };
+  }
+
+  factory Team.fromJson(Map<String, dynamic> json) {
+    return Team(
+      players: (json['players'] as List)
+          .map((p) => Player.fromJson(p))
+          .toList(),
+      totalScore: json['totalScore'],
+      goalkeeper: json['goalkeeper'] != null
+          ? Player.fromJson(json['goalkeeper'])
+          : null,
+    );
+  }
 }

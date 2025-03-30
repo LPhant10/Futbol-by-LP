@@ -1,4 +1,5 @@
 // Aquí centralizas la lógica de carga y guardado en SharedPreferences
+
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/player.dart';

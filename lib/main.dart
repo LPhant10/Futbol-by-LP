@@ -1,3 +1,4 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
 import 'screens/team_generator_page.dart';
 
@@ -12,7 +13,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false, // Quita el banner de debug
       title: 'Team Generator',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: TeamGeneratorPage(), // Pantalla principal de generación de equipos
+      home: TeamGeneratorPage(),
     );
   }
 }

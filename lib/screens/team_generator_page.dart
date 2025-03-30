@@ -1,9 +1,16 @@
 // Aquí se implementa la pantalla principal. Recuerda importar los servicios y modelos necesarios
+
+// lib/screens/team_generator_page.dart
 import 'package:flutter/material.dart';
 import '../models/player.dart';
 import '../services/storage_service.dart';
 import '../services/team_service.dart';
+import '../services/team_storage_service.dart';
 import 'match_screen.dart';
+import 'generated_teams_screen.dart';
+import '../models/team.dart'; // Ajusta la ruta según tu estructura de carpetas
+
+
 
 class TeamGeneratorPage extends StatefulWidget {
   @override
@@ -21,6 +28,8 @@ class _TeamGeneratorPageState extends State<TeamGeneratorPage> {
   int playersPerTeam = 5;
   int numberOfTeams = 2;
   int maxDifference = 5; // Diferencia máxima deseada
+
+  bool showPlayers = true; // Controla si se muestra u oculta la lista de jugadores
 
   @override
   void initState() {
@@ -46,15 +55,17 @@ class _TeamGeneratorPageState extends State<TeamGeneratorPage> {
     String name = _nameController.text.trim();
     int? rating = int.tryParse(_ratingController.text);
     if (name.isEmpty || rating == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Nombre y rating son requeridos.")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Nombre y rating son requeridos.")),
+      );
       return;
     }
     setState(() {
       Player newPlayer = Player(
-          id: DateTime.now().millisecondsSinceEpoch,
-          name: name,
-          rating: rating);
+        id: DateTime.now().millisecondsSinceEpoch,
+        name: name,
+        rating: rating,
+      );
       players.add(newPlayer);
       selectedPlayers[newPlayer.id] = false;
       _nameController.clear();
@@ -74,35 +85,39 @@ class _TeamGeneratorPageState extends State<TeamGeneratorPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-                controller: _nameController,
-                decoration: InputDecoration(labelText: "Nombre")),
+              controller: _nameController,
+              decoration: InputDecoration(labelText: "Nombre"),
+            ),
             TextField(
-                controller: _ratingController,
-                decoration: InputDecoration(labelText: "Rating"),
-                keyboardType: TextInputType.number),
+              controller: _ratingController,
+              decoration: InputDecoration(labelText: "Rating"),
+              keyboardType: TextInputType.number,
+            ),
           ],
         ),
         actions: [
           TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _nameController.clear();
-                _ratingController.clear();
-              },
-              child: Text("Cancelar")),
+            onPressed: () {
+              Navigator.pop(context);
+              _nameController.clear();
+              _ratingController.clear();
+            },
+            child: Text("Cancelar"),
+          ),
           TextButton(
-              onPressed: () {
-                setState(() {
-                  player.name = _nameController.text.trim();
-                  player.rating =
-                      int.tryParse(_ratingController.text) ?? player.rating;
-                });
-                Navigator.pop(context);
-                _nameController.clear();
-                _ratingController.clear();
-                savePlayersList();
-              },
-              child: Text("Guardar")),
+            onPressed: () {
+              setState(() {
+                player.name = _nameController.text.trim();
+                player.rating =
+                    int.tryParse(_ratingController.text) ?? player.rating;
+              });
+              Navigator.pop(context);
+              _nameController.clear();
+              _ratingController.clear();
+              savePlayersList();
+            },
+            child: Text("Guardar"),
+          ),
         ],
       ),
     );
@@ -116,19 +131,21 @@ class _TeamGeneratorPageState extends State<TeamGeneratorPage> {
         content: Text("¿Estás seguro de eliminar a ${player.name}?"),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("Cancelar")),
+            onPressed: () => Navigator.pop(context),
+            child: Text("Cancelar"),
+          ),
           TextButton(
-              onPressed: () {
-                setState(() {
-                  players.removeWhere((p) => p.id == player.id);
-                  selectedPlayers.remove(player.id);
-                  selectedOrder.remove(player.id);
-                });
-                Navigator.pop(context);
-                savePlayersList();
-              },
-              child: Text("Eliminar")),
+            onPressed: () {
+              setState(() {
+                players.removeWhere((p) => p.id == player.id);
+                selectedPlayers.remove(player.id);
+                selectedOrder.remove(player.id);
+              });
+              Navigator.pop(context);
+              savePlayersList();
+            },
+            child: Text("Eliminar"),
+          ),
         ],
       ),
     );
@@ -159,8 +176,12 @@ class _TeamGeneratorPageState extends State<TeamGeneratorPage> {
       final result = generateCompleteTeams(
           selected, playersPerTeam, numberOfTeams,
           maxDifference: maxDifference);
-      final teams = result["teams"];
-      final leftovers = result["leftovers"];
+      final List<Team> teams = result["teams"];
+      final List<Player> leftovers = result["leftovers"];
+
+      // Guardar los equipos generados de forma persistente
+      TeamStorageService.saveTeams(teams, leftovers);
+
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
@@ -254,7 +275,8 @@ class _TeamGeneratorPageState extends State<TeamGeneratorPage> {
                   ),
                 ),
                 SizedBox(width: 8),
-                ElevatedButton(onPressed: addPlayer, child: Text("Agregar")),
+                ElevatedButton(
+                    onPressed: addPlayer, child: Text("Agregar")),
               ],
             ),
             SizedBox(height: 16),
@@ -312,84 +334,108 @@ class _TeamGeneratorPageState extends State<TeamGeneratorPage> {
               ],
             ),
             SizedBox(height: 16),
-            // Sección de jugadores y selección
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text("Jugadores",
+            // Encabezado de la sección de jugadores, con scroll horizontal para evitar overflow
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Jugadores ($selectedCount seleccionados)",
                     style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Row(
-                  children: [
-                    TextButton(
-                        onPressed: () => selectAll(true),
-                        child: Text("Select All")),
-                    TextButton(
-                        onPressed: () => selectAll(false),
-                        child: Text("Deselect All")),
-                  ],
-                ),
-              ],
-            ),
-            if (selectedCount > 0)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Text("Jugadores seleccionados: $selectedCount",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-              ),
-            Column(
-              children: players.map((player) {
-                bool isSelected = selectedPlayers[player.id] ?? false;
-                int? order =
-                    isSelected ? (selectedOrder.indexOf(player.id) + 1) : null;
-                return Card(
-                  child: ListTile(
-                    leading: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Checkbox(
-                          value: isSelected,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              selectedPlayers[player.id] = value ?? false;
-                              if (value == true) {
-                                if (!selectedOrder.contains(player.id)) {
-                                  selectedOrder.add(player.id);
-                                }
-                              } else {
-                                selectedOrder.remove(player.id);
-                              }
-                            });
-                          },
-                        ),
-                        if (isSelected)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 4.0),
-                            child: CircleAvatar(
-                              radius: 12,
-                              child: Text("$order",
-                                  style: TextStyle(fontSize: 12)),
-                            ),
-                          ),
-                      ],
-                    ),
-                    title: Text(player.name),
-                    subtitle: Text("Rating: ${player.rating}"),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                            icon: Icon(Icons.edit),
-                            onPressed: () => editPlayer(player)),
-                        IconButton(
-                            icon: Icon(Icons.delete),
-                            onPressed: () => deletePlayer(player)),
-                      ],
-                    ),
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                );
-              }).toList(),
+                  SizedBox(width: 8),
+                  
+                ],
+              ),
             ),
+             SizedBox(width: 8),
+                   Row(
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            showPlayers = !showPlayers;
+                          });
+                        },
+                        child: Text(
+                          showPlayers ? "Ocultar" : "Mostrar",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                       TextButton(
+                        onPressed: () => selectAll(true),
+                        child: Text("Select All"),
+                      ),
+                      TextButton(
+                        onPressed: () => selectAll(false),
+                        child: Text("Deselect All"),
+                      ),
+
+                    ],
+                  ),
+            SizedBox(height: 8),
+            // Mostrar la lista de jugadores solo si showPlayers es true
+            if (showPlayers)
+              Column(
+                children: players.map((player) {
+                  bool isSelected = selectedPlayers[player.id] ?? false;
+                  int? order = isSelected
+                      ? (selectedOrder.indexOf(player.id) + 1)
+                      : null;
+                  return Card(
+                    child: ListTile(
+                      leading: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Checkbox(
+                            value: isSelected,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                selectedPlayers[player.id] = value ?? false;
+                                if (value == true) {
+                                  if (!selectedOrder.contains(player.id)) {
+                                    selectedOrder.add(player.id);
+                                  }
+                                } else {
+                                  selectedOrder.remove(player.id);
+                                }
+                              });
+                            },
+                          ),
+                          if (isSelected)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 4.0),
+                              child: CircleAvatar(
+                                radius: 12,
+                                child: Text(
+                                  "$order",
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      title: Text(player.name),
+                      subtitle: Text("Rating: ${player.rating}"),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.edit),
+                            onPressed: () => editPlayer(player),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete),
+                            onPressed: () => deletePlayer(player),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
             SizedBox(height: 16),
             Center(
               child: ElevatedButton(
@@ -401,8 +447,23 @@ class _TeamGeneratorPageState extends State<TeamGeneratorPage> {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => MatchScreen()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => GeneratedTeamsScreen()),
+                  );
+                },
+                child: Text("Ver Equipos Guardados"),
+              ),
+            ),
+            SizedBox(height: 16),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => MatchScreen()),
+                  );
                 },
                 child: Text("Ir a Partido"),
               ),

@@ -4,7 +4,8 @@ import 'dart:math';
 import '../models/player.dart';
 import '../models/team.dart';
 
-void balanceTeams(List<Team> teams, int playersPerTeam, {int maxDifference = 1}) {
+void balanceTeams(List<Team> teams, int playersPerTeam,
+    {int maxDifference = 1}) {
   int maxScore = teams.map((t) => t.totalScore).reduce(max);
   int minScore = teams.map((t) => t.totalScore).reduce(min);
 
@@ -39,7 +40,8 @@ Map<String, dynamic> generateFieldTeams(
   List<Player> leftovers = [];
 
   for (var player in players) {
-    Team team = teams.reduce((t1, t2) => t1.totalScore < t2.totalScore ? t1 : t2);
+    Team team =
+        teams.reduce((t1, t2) => t1.totalScore < t2.totalScore ? t1 : t2);
     if (team.players.length < playersPerTeam) {
       team.players.add(player);
       team.totalScore += player.rating;
@@ -47,6 +49,7 @@ Map<String, dynamic> generateFieldTeams(
       leftovers.add(player);
     }
   }
+
   balanceTeams(teams, playersPerTeam, maxDifference: maxDifference);
   return {"teams": teams, "leftovers": leftovers};
 }
@@ -60,11 +63,13 @@ Map<String, dynamic> generateCompleteTeams(
   }
   selectedPlayers.shuffle();
 
-  final result = generateFieldTeams(selectedPlayers, playersPerTeam, numberOfTeams,
+  final result = generateFieldTeams(
+      selectedPlayers, playersPerTeam, numberOfTeams,
       maxDifference: maxDifference);
   List<Team> teams = result["teams"];
   List<Player> leftovers = result["leftovers"];
 
+  // Asignar arquero en cada equipo sin quitarlo, para mantener el total de jugadores.
   for (int i = 0; i < teams.length; i++) {
     if (teams[i].players.any((p) => p.rating == 1)) {
       teams[i].goalkeeper = teams[i].players.firstWhere((p) => p.rating == 1);
