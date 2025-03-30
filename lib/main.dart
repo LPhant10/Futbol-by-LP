@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -54,7 +55,8 @@ class Team {
 
 /// Balancea las puntuaciones de los equipos para que la diferencia
 /// no exceda [maxDifference].
-void balanceTeams(List<Team> teams, int playersPerTeam, {int maxDifference = 1}) {
+void balanceTeams(List<Team> teams, int playersPerTeam,
+    {int maxDifference = 1}) {
   int maxScore = teams.map((t) => t.totalScore).reduce(max);
   int minScore = teams.map((t) => t.totalScore).reduce(min);
 
@@ -556,7 +558,7 @@ class _TeamGeneratorPageState extends State<TeamGeneratorPage> {
   }
 }
 
-/// Pantalla de Partido con cronómetro de 10 minutos y asignación de puntos.
+/// Pantalla de Partido con cronómetro de 10 minutos, goles, puntos y reproducción de sonido.
 class MatchScreen extends StatefulWidget {
   @override
   _MatchScreenState createState() => _MatchScreenState();
@@ -574,7 +576,15 @@ class _MatchScreenState extends State<MatchScreen> {
   int pointsTeam2 = 0;
   int pointsTeam3 = 0;
 
+  // Método para reproducir el sonido desde assets usando la nueva API
+  Future<void> playSound(String assetName) async {
+    final player = AudioPlayer();
+    await player.play(AssetSource(assetName));
+  }
+
   void startTimer() {
+    // Reproducir sonido al iniciar el partido
+    playSound('silvato.mp3');
     if (timer != null) timer!.cancel();
     setState(() {
       timeLeft = 600;
@@ -592,6 +602,9 @@ class _MatchScreenState extends State<MatchScreen> {
 
   void endMatch() {
     if (timer != null) timer!.cancel();
+
+    // Reproducir sonido al finalizar el partido
+    playSound('silvato.mp3');
 
     int winner = 0; // 1 para Equipo1, 2 para Equipo2, 3 para Equipo3; 0 para empate
     // Si algún equipo alcanza 2 goles, se considera ganador inmediato.
