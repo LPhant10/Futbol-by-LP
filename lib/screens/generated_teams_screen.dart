@@ -36,8 +36,10 @@ class _GeneratedTeamsScreenState extends State<GeneratedTeamsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Equipo $teamNumber",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(
+              "Equipo $teamNumber",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
             Text("Total de jugadores: ${team.players.length}"),
             Text("Arquero: ${team.goalkeeper?.name ?? 'Ninguno'}"),
             Text("Puntuación Total: ${team.totalScore}"),
@@ -62,8 +64,10 @@ class _GeneratedTeamsScreenState extends State<GeneratedTeamsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Jugadores Sobrantes:",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(
+              "Jugadores Sobrantes:",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
             if (leftovers.isEmpty)
               Text("  Ninguno")
             else
@@ -82,16 +86,17 @@ class _GeneratedTeamsScreenState extends State<GeneratedTeamsScreen> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text("Equipos Generados (Persistentes)"),
-        ),
+        appBar: AppBar(title: Text("Equipos Generados (Persistentes)")),
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("⚽ Equipos Generados ⚽ ", style: TextStyle(color: Colors.white)),
+        title: Text(
+          "⚽ Equipos Generados ⚽ ",
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.orange,
       ),
       body: SingleChildScrollView(
@@ -102,18 +107,24 @@ class _GeneratedTeamsScreenState extends State<GeneratedTeamsScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (teams.length >= 1)
-                  Expanded(child: teamWidget(teams[0], 1)),
-                if (teams.length >= 2)
-                  Expanded(child: teamWidget(teams[1], 2)),
+                if (teams.length >= 1) Expanded(child: teamWidget(teams[0], 1)),
+                if (teams.length >= 2) Expanded(child: teamWidget(teams[1], 2)),
               ],
             ),
             // Segunda fila: Equipo 3 y Sobrantes (lado a lado)
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (teams.length >= 3)
-                  Expanded(child: teamWidget(teams[2], 3)),
+                if (teams.length >= 3) Expanded(child: teamWidget(teams[2], 3)),
+                if (teams.length >= 4) Expanded(child: teamWidget(teams[3], 4)),
+
+                
+              ],
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                
                 if (leftovers.isNotEmpty)
                   Expanded(child: leftoversWidget(leftovers)),
               ],
