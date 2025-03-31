@@ -4,6 +4,8 @@ import '../models/team.dart';
 import '../services/storage_service.dart';
 import '../services/team_service.dart';
 import '../services/team_storage_service.dart';
+import 'dart:math';
+
 
 class PlayersGenerateScreen extends StatefulWidget {
   const PlayersGenerateScreen({super.key});
@@ -182,63 +184,81 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
 
       TeamStorageService.saveTeams(teams, leftovers);
 
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text("Equipos Generados"),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ...teams.asMap().entries.map((entry) {
-                  int index = entry.key;
-                  var team = entry.value;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Equipo ${index + 1}",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Text("Total de jugadores: ${team.players.length}"),
-                        Text("Arquero: ${team.goalkeeper?.name ?? 'Ninguno'}"),
-                        Text("Puntuación Total: ${team.totalScore}"),
-                        SizedBox(height: 4),
-                        Text("Jugadores:"),
-                        ...team.players.asMap().entries.map((e) {
-                          int i = e.key;
-                          var p = e.value;
-                          return Text("  ${i + 1}. ${p.name} - ${p.rating}");
-                        })
-                      ],
-                    ),
-                  );
-                }),
-                Text(
-                  "Jugadores Sobrantes:",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                if (leftovers.isEmpty)
-                  Text("  Ninguno")
-                else
-                  ...leftovers.asMap().entries.map((e) {
+    showDialog(
+  context: context,
+  builder: (_) => AlertDialog(
+    title: Container(
+      child: Text("Equipos Generados", style: TextStyle(color: Colors.red)),
+    ),
+    content: SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ...teams.asMap().entries.map((entry) {
+            int index = entry.key;
+            var team = entry.value;
+            // Seleccionamos aleatoriamente el cobrador del equipo (guardamos su id)
+            int? cobradorId = team.players.isNotEmpty
+                ? team.players[Random().nextInt(team.players.length)].id
+                : null;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Equipo ${index + 1}",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text("Total de jugadores: ${team.players.length}"),
+                  Text("Arquero: ${team.goalkeeper?.name ?? 'Ninguno'}"),
+                  Text("Puntuación Total: ${team.totalScore}"),
+                  SizedBox(height: 4),
+                  Text("Cobrador: " +
+                      (cobradorId != null
+                          ? team.players.firstWhere((p) => p.id == cobradorId).name
+                          : "Ninguno")),
+                  SizedBox(height: 4),
+                  Text("Jugadores:"),
+                  ...team.players.asMap().entries.map((e) {
                     int i = e.key;
                     var p = e.value;
-                    return Text("  ${i + 1}. ${p.name} - ${p.rating}");
-                  })
-              ],
-            ),
+                    // Si el jugador es el cobrador, se añade el texto "(cobrador)"
+                    String playerText = "  ${i + 1}. ${p.name} - ${p.rating}" +
+                        (cobradorId == p.id ? " ⚽ " : "");
+                    return Text(playerText);
+                  }).toList(),
+                ],
+              ),
+            );
+          }).toList(),
+          Text(
+            "Jugadores Sobrantes:",
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("Cerrar"),
-            ),
-          ],
-        ),
-      );
+          if (leftovers.isEmpty)
+            Text("  Ninguno")
+          else
+            ...leftovers.asMap().entries.map((e) {
+              int i = e.key;
+              var p = e.value;
+              return Text("  ${i + 1}. ${p.name} - ${p.rating}");
+            }).toList(),
+        ],
+      ),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: Text("Cerrar"),
+      ),
+    ],
+  ),
+);
+
+
+
+      
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(e.toString())));

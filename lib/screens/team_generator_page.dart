@@ -6,6 +6,8 @@ import 'generated_teams_screen.dart';
 import 'payment_calculator_screen.dart.dart';
 
 class TeamGeneratorPage extends StatelessWidget {
+  const TeamGeneratorPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
