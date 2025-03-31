@@ -1,4 +1,3 @@
-// lib/screens/players_generate_screen.dart
 import 'package:flutter/material.dart';
 import '../models/player.dart';
 import '../models/team.dart';
@@ -7,6 +6,8 @@ import '../services/team_service.dart';
 import '../services/team_storage_service.dart';
 
 class PlayersGenerateScreen extends StatefulWidget {
+  const PlayersGenerateScreen({super.key});
+
   @override
   _PlayersGenerateScreenState createState() => _PlayersGenerateScreenState();
 }
@@ -16,9 +17,8 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
   final TextEditingController _ratingController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
 
-  bool isSearching = false;
-  String searchQuery = '';
-  bool showPlayers = true;
+  String searchQuery = '';    // Siempre mostrará el TextField de búsqueda
+  bool showPlayers = true;    // Para mostrar/ocultar la lista de jugadores
 
   List<Player> players = [];
   Map<int, bool> selectedPlayers = {};
@@ -211,11 +211,11 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
                           int i = e.key;
                           var p = e.value;
                           return Text("  ${i + 1}. ${p.name} - ${p.rating}");
-                        }).toList(),
+                        })
                       ],
                     ),
                   );
-                }).toList(),
+                }),
                 Text(
                   "Jugadores Sobrantes:",
                   style: TextStyle(fontWeight: FontWeight.bold),
@@ -227,7 +227,7 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
                     int i = e.key;
                     var p = e.value;
                     return Text("  ${i + 1}. ${p.name} - ${p.rating}");
-                  }).toList(),
+                  })
               ],
             ),
           ),
@@ -245,157 +245,39 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // Filtrar jugadores según búsqueda
-    List<Player> filteredPlayers = players.where((player) {
-      return player.name.toLowerCase().contains(searchQuery.toLowerCase());
-    }).toList();
+  // Método auxiliar para contar los jugadores seleccionados.
+  int _countSelected() {
+    return selectedPlayers.values.where((v) => v).length;
+  }
 
-    int selectedCount = selectedPlayers.values.where((v) => v).length;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("⚽ PICHANGEROS ⚽", style: TextStyle(color: Colors.white),),
-        backgroundColor: Colors.blue,
-      ),
-      body: SafeArea(
-        child: ListView(
-          padding: EdgeInsets.all(12),
-          children: [
-            // Sección "Agregar Jugador"
-            Text(
-              "Agregar Jugador",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      labelText: "Nombre",
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: _ratingController,
-                    decoration: InputDecoration(
-                      labelText: "Rating",
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-                SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: addPlayer,
-                  child: Text("Agregar"),
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
-            // Opciones de generación
-            Text(
-              "Opciones de generación",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Row(
-              children: [
-                Text("Jugadores por equipo: "),
-                DropdownButton<int>(
-                  value: playersPerTeam,
-                  items: [5, 6, 7]
-                      .map((e) => DropdownMenuItem<int>(
-                            value: e,
-                            child: Text("$e"),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      playersPerTeam = value ?? 5;
-                    });
-                  },
-                ),
-                SizedBox(width: 16),
-                Text("Número de equipos: "),
-                DropdownButton<int>(
-                  value: numberOfTeams,
-                  items: [2, 3, 4]
-                      .map((e) => DropdownMenuItem<int>(
-                            value: e,
-                            child: Text("$e"),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      numberOfTeams = value ?? 2;
-                    });
-                  },
-                ),
-              ],
-            ),
-            SizedBox(height: 8),
-            Row(
-              children: [
-                Text("Diferencia máxima: "),
-                DropdownButton<int>(
-                  value: maxDifference,
-                  items: [1, 2, 3, 4, 5]
-                      .map((e) => DropdownMenuItem<int>(
-                            value: e,
-                            child: Text("$e"),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      maxDifference = value ?? 1;
-                    });
-                  },
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
-            // Encabezado de jugadores
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Jugadores ($selectedCount seleccionados)",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                // Botón para alternar búsqueda
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      isSearching = !isSearching;
-                      if (!isSearching) {
-                        searchQuery = '';
-                        _searchController.clear();
-                      }
-                    });
-                  },
-                  child: Text(
-                    "Busqueda",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-            // Cuadro de búsqueda inline
-            if (isSearching)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12.0),
+  // --- Widgets para el encabezado fijo ---
+  Widget _buildSliverPersistentHeader(BuildContext context, bool innerBoxIsScrolled) {
+    return Container(
+      color: Colors.white,
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Fila: Encabezado (Jugadores (X) seleccionados) + Cuadro de búsqueda SIEMPRE visible
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Jugadores (${_countSelected()} seleccionados)",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              // Se quita el botón "Busqueda" y se muestra el TextField directamente
+              
+            ],
+          ),
+          SizedBox(
+                width: 250,
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: "Buscar jugadores...",
+                    hintText: "Busca tu cojo...",
                     border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 0),
                     suffixIcon: IconButton(
                       icon: Icon(Icons.clear),
                       onPressed: () {
@@ -413,106 +295,291 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
                   },
                 ),
               ),
-            // Botones "Ocultar", "Select All", "Deselect All"
-            Row(
-              children: [
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      showPlayers = !showPlayers;
-                    });
-                  },
-                  child: Text(
-                    showPlayers ? "Ocultar" : "Mostrar",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
+          SizedBox(height: 8),
+          // Fila: Botones "Ocultar", "Select All" y "Deselect All"
+          Row(
+            children: [
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    showPlayers = !showPlayers;
+                  });
+                },
+                child: Text(
+                  showPlayers ? "Ocultar" : "Mostrar",
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                TextButton(
-                  onPressed: () => selectAll(true),
-                  child: Text("Select All"),
-                ),
-                TextButton(
-                  onPressed: () => selectAll(false),
-                  child: Text("Deselect All"),
-                ),
-              ],
-            ),
-            SizedBox(height: 8),
-            // Lista de jugadores
-            if (showPlayers)
-              Column(
-                children: filteredPlayers.map((player) {
-                  bool isSelected = selectedPlayers[player.id] ?? false;
-                  int? order = isSelected
-                      ? (selectedOrder.indexOf(player.id) + 1)
-                      : null;
-                  return Card(
-                    child: ListTile(
-                      leading: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Checkbox(
-                            value: isSelected,
-                            onChanged: (bool? value) {
-                              setState(() {
-                                selectedPlayers[player.id] = value ?? false;
-                                if (value == true &&
-                                    !selectedOrder.contains(player.id)) {
-                                  selectedOrder.add(player.id);
-                                } else if (value == false) {
-                                  selectedOrder.remove(player.id);
-                                }
-                              });
-                            },
+              ),
+              TextButton(
+                onPressed: () => selectAll(true),
+                child: Text("Select All"),
+              ),
+              TextButton(
+                onPressed: () => selectAll(false),
+                child: Text("Deselect All"),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Delegate para SliverPersistentHeader
+  SliverPersistentHeaderDelegate _buildSliverDelegate() {
+    return _MySliverDelegate(
+      minHeight: 147,
+      maxHeight: 147,
+      child: _buildSliverPersistentHeader(context, false),
+    );
+  }
+  // --- Fin de widgets de encabezado fijo ---
+
+  @override
+  Widget build(BuildContext context) {
+    // Filtrar jugadores según búsqueda.
+    List<Player> filteredPlayers = players.where((player) {
+      return player.name.toLowerCase().contains(searchQuery.toLowerCase());
+    }).toList();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("⚽ PICHANGEROS ⚽", style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.blue,
+      ),
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            // Parte superior: Agregar Jugador y Opciones de generación.
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Agregar Jugador",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _nameController,
+                            decoration: InputDecoration(
+                              labelText: "Nombre",
+                              border: OutlineInputBorder(),
+                            ),
                           ),
-                          if (isSelected)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 4.0),
-                              child: CircleAvatar(
-                                radius: 12,
-                                child: Text(
-                                  "$order",
-                                  style: TextStyle(fontSize: 12),
-                                ),
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            controller: _ratingController,
+                            decoration: InputDecoration(
+                              labelText: "Rating",
+                              border: OutlineInputBorder(),
+                            ),
+                            keyboardType: TextInputType.number,
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: addPlayer,
+                          child: Text("Agregar"),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      "Opciones de generación",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Text("Jugadores por equipo: "),
+                        DropdownButton<int>(
+                          value: playersPerTeam,
+                          items: [5, 6, 7]
+                              .map((e) => DropdownMenuItem<int>(
+                                    value: e,
+                                    child: Text("$e"),
+                                  ))
+                              .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              playersPerTeam = value ?? 5;
+                            });
+                          },
+                        ),
+                        SizedBox(width: 16),
+                        Text("Número de equipos: "),
+                        DropdownButton<int>(
+                          value: numberOfTeams,
+                          items: [2, 3, 4]
+                              .map((e) => DropdownMenuItem<int>(
+                                    value: e,
+                                    child: Text("$e"),
+                                  ))
+                              .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              numberOfTeams = value ?? 2;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Text("Diferencia máxima: "),
+                        DropdownButton<int>(
+                          value: maxDifference,
+                          items: [1, 2, 3, 4, 5]
+                              .map((e) => DropdownMenuItem<int>(
+                                    value: e,
+                                    child: Text("$e"),
+                                  ))
+                              .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              maxDifference = value ?? 1;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ),
+            // Encabezado fijo: Jugadores, búsqueda y botones
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _buildSliverDelegate(),
+            ),
+          ];
+        },
+        body: CustomScrollView(
+          slivers: [
+            SliverFillRemaining(
+              hasScrollBody: true,
+              child: Column(
+                children: [
+                  // Lista de jugadores (scrollable)
+                  if (showPlayers)
+                    Expanded(
+                      child: ListView.builder(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        itemCount: filteredPlayers.length,
+                        itemBuilder: (context, index) {
+                          final player = filteredPlayers[index];
+                          bool isSelected = selectedPlayers[player.id] ?? false;
+                          int? order = isSelected
+                              ? (selectedOrder.indexOf(player.id) + 1)
+                              : null;
+
+                          return Card(
+                            child: ListTile(
+                              leading: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Checkbox(
+                                    value: isSelected,
+                                    onChanged: (bool? value) {
+                                      setState(() {
+                                        selectedPlayers[player.id] = value ?? false;
+                                        if (value == true &&
+                                            !selectedOrder.contains(player.id)) {
+                                          selectedOrder.add(player.id);
+                                        } else if (value == false) {
+                                          selectedOrder.remove(player.id);
+                                        }
+                                      });
+                                    },
+                                  ),
+                                  if (isSelected)
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 4.0),
+                                      child: CircleAvatar(
+                                        radius: 12,
+                                        child: Text(
+                                          "$order",
+                                          style: TextStyle(fontSize: 12),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              title: Text(player.name),
+                              subtitle: Text("Rating: ${player.rating}"),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.edit),
+                                    onPressed: () => editPlayer(player),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.delete),
+                                    onPressed: () => deletePlayer(player),
+                                  ),
+                                ],
                               ),
                             ),
-                        ],
-                      ),
-                      title: Text(player.name),
-                      subtitle: Text("Rating: ${player.rating}"),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.edit),
-                            onPressed: () => editPlayer(player),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.delete),
-                            onPressed: () => deletePlayer(player),
-                          ),
-                        ],
+                          );
+                        },
                       ),
                     ),
-                  );
-                }).toList(),
+                  // Botón "Generar Equipos" al final (una sola vez)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: ElevatedButton(
+                      onPressed: generateTeamsAction,
+                      child: Text("Generar Equipos"),
+                    ),
+                  ),
+                ],
               ),
-            SizedBox(height: 16),
-            // Botones de acción (Agregar Jugador, Generar Equipos)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                
-                SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: generateTeamsAction,
-                  child: Text("Generar Equipos"),
-                ),
-              ],
             ),
           ],
         ),
       ),
     );
+  }
+}
+
+// Delegate para SliverPersistentHeader
+class _MySliverDelegate extends SliverPersistentHeaderDelegate {
+  final double minHeight;
+  final double maxHeight;
+  final Widget child;
+
+  _MySliverDelegate({
+    required this.minHeight,
+    required this.maxHeight,
+    required this.child,
+  });
+
+  @override
+  double get minExtent => minHeight;
+
+  @override
+  double get maxExtent => maxHeight;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return child;
+  }
+
+  @override
+  bool shouldRebuild(covariant _MySliverDelegate oldDelegate) {
+    return minHeight != oldDelegate.minHeight ||
+        maxHeight != oldDelegate.maxHeight ||
+        child != oldDelegate.child;
   }
 }
