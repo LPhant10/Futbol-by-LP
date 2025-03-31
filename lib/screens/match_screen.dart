@@ -13,16 +13,19 @@ class MatchScreen extends StatefulWidget {
 }
 
 class _MatchScreenState extends State<MatchScreen> {
-  int timeLeft = 10; // 600 minutos en segundos
+  // Para testeo, puedes reducir timeLeft (por ejemplo, a 10 seg), en producción 600 seg.
+  int timeLeft = 10;
   Timer? timer;
+
+  // Modo Flash: se termina el partido al alcanzar 2 goles.
   bool isFlashMode = true;
   int matchCount = 0;
 
   List<Team> teams = [];
-  // Los partidos se interpretan así:
-  // [0,1] → Partido base: Equipo 1 vs Equipo 2
-  // [0,2] → Equipo 1 vs Equipo 3
-  // [1,2] → Equipo 2 vs Equipo 3
+  // Los partidos se interpretan de la siguiente forma:
+  // [0,1] → Partido base: Equipo 1 vs Equipo 2.
+  // [0,2] → Partido: Equipo 1 vs Equipo 3 (base = 0).
+  // [1,2] → Partido: Equipo 2 vs Equipo 3 (base = 1).
   List<int> currentMatch = [0, 1];
 
   int pointsTeam1 = 0;
@@ -32,8 +35,7 @@ class _MatchScreenState extends State<MatchScreen> {
   Map<int, int> goalsByPlayer = {};
   Map<int, int> overallGoalsByPlayer = {};
 
-  // Para preservar el ganador de la última base (opcional)
-  int? lastBaseWinner;
+  int? lastBaseWinner; // Para recordar el ganador de la base (opcional)
 
   @override
   void initState() {
@@ -57,18 +59,21 @@ class _MatchScreenState extends State<MatchScreen> {
     setState(() {});
   }
 
-  // Retorna true si currentMatch contiene los equipos 0 y 1 (sin importar el orden)
+  // Retorna true si currentMatch contiene 0 y 1 (partido base).
   bool isBaseMatch() {
     return currentMatch.toSet().containsAll({0, 1});
   }
 
-  // Para partidos base, normalizamos el orden a [0,1].
+  // Para partidos base, forzamos el orden [0,1] (esto ayuda a identificar quién ganó).
   void normalizeBaseMatch() {
     if (isBaseMatch()) currentMatch.sort();
   }
 
-  // Si el ganador es 0 o 1, el siguiente rival es siempre 2.
-  // Para el Equipo 3 (índice 2): se asigna según el partido actual.
+  // Función auxiliar para elegir el siguiente rival.
+  // Si el ganador es base (0 o 1), el siguiente rival es el Equipo 3 (índice 2).
+  // Si el ganador es el Equipo 3 (índice 2), se asigna según:
+  // - Si currentMatch es [0,2] → ya jugó contra el 1, siguiente rival es 1.
+  // - Si currentMatch es [1,2] → ya jugó contra el 2, siguiente rival es 0.
   int chooseNextOpponent(int winner) {
     if (winner == 0 || winner == 1) return 2;
     else {
@@ -77,11 +82,32 @@ class _MatchScreenState extends State<MatchScreen> {
     }
   }
 
+  // Función auxiliar para alternar el partido en caso de empate.
+  // Se define un ciclo:
+  // [0,1] → [1,2] → [2,0] → [0,1]
+  List<int> toggleMatchForTie(List<int> match) {
+    // Si el partido actual es base [0,1] (o [1,0]), siguiente es [1,2].
+    if ((match[0] == 0 && match[1] == 1) || (match[0] == 1 && match[1] == 0)) {
+      return [1, 2];
+    }
+    // Si es [1,2] (Equipo 2 vs Equipo 3), siguiente es [2,0] (Equipo 3 vs Equipo 1).
+    else if ((match[0] == 1 && match[1] == 2) || (match[0] == 2 && match[1] == 1)) {
+      return [2, 0];
+    }
+    // Si es [2,0] (Equipo 3 vs Equipo 1), siguiente es [0,1] (Equipo 1 vs Equipo 2).
+    else if ((match[0] == 2 && match[1] == 0) || (match[0] == 0 && match[1] == 2)) {
+      return [0, 1];
+    }
+    return match;
+  }
+
+  // Para testeo rápido, se puede reducir el tiempo.
   void startTimer() {
     playSound('silvato.mp3');
     timer?.cancel();
     setState(() {
-      timeLeft = 10; // 600
+      // Para testeo, podrías poner timeLeft = 10;
+      timeLeft = 10;
     });
     timer = Timer.periodic(Duration(seconds: 1), (t) {
       if (timeLeft > 0) {
@@ -122,7 +148,9 @@ class _MatchScreenState extends State<MatchScreen> {
                       });
                     }
                     Navigator.pop(context);
-                    if (isFlashMode && getTeamGoals(teamMatchIndex) >= 2 && mounted) {
+                    if (isFlashMode &&
+                        getTeamGoals(teamMatchIndex) >= 2 &&
+                        mounted) {
                       onMatchEnded();
                     }
                   },
@@ -175,20 +203,33 @@ class _MatchScreenState extends State<MatchScreen> {
     return topPlayer != null ? "${topPlayer.name} ($maxGoals goles)" : "Ninguno";
   }
 
-  // Función para terminar el partido y programar el siguiente, según la lógica.
+  // Lógica para terminar el partido y asignar el siguiente según la secuencia:
+  // 1) Partido base [0,1]:
+  //    - Si gana el Equipo 1 → 1 punto a Equipo 1 → siguiente: [0,2].
+  //    - Si gana el Equipo 2 → 1 punto a Equipo 2 → siguiente: [1,2].
+  //    - Si empatan → siguiente: toggle([0,1]) = [1,2].
+  //
+  // 2) Partido con el Equipo 3:
+  //    Caso A: [0,2] (Equipo 1 vs Equipo 3):
+  //      - Si gana el Equipo 1 → 1 punto a Equipo 1 → siguiente: [0,1].
+  //      - Si gana el Equipo 3 → 1 punto a Equipo 3 → siguiente: [2,1].
+  //      - Si empatan → siguiente: toggle([0,2]) = [2,1].
+  //    Caso B: [1,2] (Equipo 2 vs Equipo 3):
+  //      - Si gana el Equipo 2 → 1 punto a Equipo 2 → siguiente: [0,1] (equivalente a [1,0]).
+  //      - Si gana el Equipo 3 → 1 punto a Equipo 3 → siguiente: [2,0].
+  //      - Si empatan → siguiente: toggle([1,2]) = [2,0].
   void onMatchEnded() {
     timer?.cancel();
     playSound('silvato.mp3');
 
-    // Caso 1: Partido base [0,1]
+    // Si es partido base [0,1]
     if (isBaseMatch()) {
-      normalizeBaseMatch(); // Forzamos [0,1]
-      int goalsA = getTeamGoals(0); // goles del equipo en posición 0
-      int goalsB = getTeamGoals(1); // goles del equipo en posición 1
+      normalizeBaseMatch(); // Forzamos que sea [0,1]
+      int goalsA = getTeamGoals(0);
+      int goalsB = getTeamGoals(1);
       if (goalsA == goalsB) {
-        int randomChoice = Random().nextBool() ? currentMatch[0] : currentMatch[1];
-        lastBaseWinner = randomChoice;
-        currentMatch = [randomChoice, 2];
+        // En empate, usamos toggle para la secuencia.
+        currentMatch = toggleMatchForTie(currentMatch);
       } else {
         int baseWinner = (goalsA > goalsB) ? currentMatch[0] : currentMatch[1];
         lastBaseWinner = baseWinner;
@@ -202,39 +243,36 @@ class _MatchScreenState extends State<MatchScreen> {
       }
       matchCount++;
     }
-    // Caso 2: Partido con el Equipo 3 (currentMatch contiene al 2)
+    // Partido con el Equipo 3 (cuando currentMatch contiene 2)
     else if (currentMatch.contains(2)) {
-      // Definimos el equipo base y se calculan sus goles.
-      int baseTeam;
-      int baseTeamGoals;
-      int team3Goals;
-      if (currentMatch[0] == 2) {
-        baseTeam = currentMatch[1];
-        team3Goals = getTeamGoals(0); // posición 0 tiene el 3
-        baseTeamGoals = getTeamGoals(1);
+      int goalsMatch0 = getTeamGoals(0);
+      int goalsMatch1 = getTeamGoals(1);
+      if (goalsMatch0 == goalsMatch1) {
+        // En empate, usamos toggle para alternar la secuencia.
+        currentMatch = toggleMatchForTie(currentMatch);
       } else {
-        baseTeam = currentMatch[0];
-        baseTeamGoals = getTeamGoals(0);
-        team3Goals = getTeamGoals(1);
-      }
-      if (baseTeamGoals == team3Goals) {
-        // Empate: se programa como si ganara el Equipo 3 (porque el base ya jugó)
-        currentMatch = (baseTeam == 0) ? [2, 1] : [2, 0];
-      } else {
-        int winner = (baseTeamGoals > team3Goals) ? baseTeam : 2;
+        // Determinamos el equipo base (el que no es 2)
+        int baseTeam = (currentMatch[0] == 2) ? currentMatch[1] : currentMatch[0];
+        int baseGoals, team3Goals;
+        if (currentMatch[0] == 2) {
+          team3Goals = getTeamGoals(0);
+          baseGoals = getTeamGoals(1);
+        } else {
+          baseGoals = getTeamGoals(0);
+          team3Goals = getTeamGoals(1);
+        }
+        int winner = (baseGoals > team3Goals) ? baseTeam : 2;
         if (winner == baseTeam) {
-          // Gana el base → se suma punto al base y se programa el siguiente partido base:
+          // El equipo base gana → se asigna el siguiente partido base.
           if (baseTeam == 0) {
             pointsTeam1++;
-            currentMatch = [0, 1]; // [0,1] → Equipo 1 vs Equipo 2
+            currentMatch = [0, 1];
           } else {
             pointsTeam2++;
-            currentMatch = [1, 0]; // [0,1] (ordenado) → Equipo 1 vs Equipo 2 (con ganador 2)
+            currentMatch = [0, 1]; // [0,1] es la base
           }
         } else {
-          // Gana el Equipo 3 → se suma 1 punto a Equipo 3 y se programa:
-          // Si el base es 0 (Equipo 1), siguiente es [2,1] (Equipo 3 vs Equipo 2)
-          // Si el base es 1 (Equipo 2), siguiente es [2,0] (Equipo 3 vs Equipo 1)
+          // Gana el Equipo 3 → se suma 1 punto y el siguiente partido es contra el otro base.
           pointsTeam3++;
           currentMatch = (baseTeam == 0) ? [2, 1] : [2, 0];
         }
@@ -254,7 +292,7 @@ class _MatchScreenState extends State<MatchScreen> {
       context,
       MaterialPageRoute(
         builder: (_) => EndMatchScreen(
-          winner: 0, // Ajusta según tu criterio final
+          winner: 0, // Ajusta según tu criterio final.
           pointsTeam1: pointsTeam1,
           pointsTeam2: pointsTeam2,
           pointsTeam3: pointsTeam3,
@@ -286,7 +324,7 @@ class _MatchScreenState extends State<MatchScreen> {
   void resetMatch() {
     if (!mounted) return;
     setState(() {
-      timeLeft = 10; // 600
+      timeLeft = 10;
       goalsByPlayer.updateAll((key, value) => 0);
     });
   }
@@ -301,7 +339,7 @@ class _MatchScreenState extends State<MatchScreen> {
   Widget build(BuildContext context) {
     String minutes = (timeLeft ~/ 60).toString().padLeft(2, '0');
     String seconds = (timeLeft % 60).toString().padLeft(2, '0');
-    
+
     if (teams.isEmpty) {
       return Scaffold(
         appBar: AppBar(
@@ -311,7 +349,7 @@ class _MatchScreenState extends State<MatchScreen> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Partido", style: TextStyle(color: Colors.white)),
@@ -329,7 +367,9 @@ class _MatchScreenState extends State<MatchScreen> {
                 TextButton(
                   onPressed: () {
                     if (!mounted) return;
-                    setState(() { isFlashMode = true; });
+                    setState(() {
+                      isFlashMode = true;
+                    });
                   },
                   child: Text("Flash",
                       style: TextStyle(
@@ -339,7 +379,9 @@ class _MatchScreenState extends State<MatchScreen> {
                 TextButton(
                   onPressed: () {
                     if (!mounted) return;
-                    setState(() { isFlashMode = false; });
+                    setState(() {
+                      isFlashMode = false;
+                    });
                   },
                   child: Text("Normal",
                       style: TextStyle(
@@ -362,7 +404,7 @@ class _MatchScreenState extends State<MatchScreen> {
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
-            // Botones para agregar gol.
+            // Botones para agregar goles.
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
