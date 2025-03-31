@@ -1,7 +1,7 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 class EndMatchScreen extends StatelessWidget {
-  final int winner;
   final int pointsTeam1;
   final int pointsTeam2;
   final int pointsTeam3;
@@ -10,7 +10,6 @@ class EndMatchScreen extends StatelessWidget {
   final String mvpEquipo3;
 
   EndMatchScreen({
-    required this.winner,
     required this.pointsTeam1,
     required this.pointsTeam2,
     required this.pointsTeam3,
@@ -21,6 +20,23 @@ class EndMatchScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Determinar el máximo de puntos
+    int maxPoints = [pointsTeam1, pointsTeam2, pointsTeam3].reduce(max);
+
+    // Crear una lista con los números de equipo que alcanzaron maxPoints
+    List<int> winningTeams = [];
+    if (pointsTeam1 == maxPoints) winningTeams.add(1);
+    if (pointsTeam2 == maxPoints) winningTeams.add(2);
+    if (pointsTeam3 == maxPoints) winningTeams.add(3);
+
+    String resultText;
+    if (winningTeams.length == 1) {
+      resultText = "¡Equipo ${winningTeams.first} gana el encuentro!";
+    } else {
+      // Si hay empate, listamos los equipos
+      resultText = "Empate entre los equipos: " + winningTeams.join(" y ");
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Resultado Final"),
@@ -31,7 +47,7 @@ class EndMatchScreen extends StatelessWidget {
         child: Column(
           children: [
             Text(
-              "¡Equipo ${winner + 1} gana el encuentro!",
+              resultText,
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),

@@ -13,7 +13,7 @@ class MatchScreen extends StatefulWidget {
 
 class _MatchScreenState extends State<MatchScreen> {
   // Para testeo, puedes reducir timeLeft (por ejemplo, a 10 seg), en producción 600 seg.
-  int timeLeft = 10;
+  int timeLeft = 600;
   Timer? timer;
 
   // Modo Flash: se termina el partido al alcanzar 2 goles.
@@ -106,7 +106,7 @@ class _MatchScreenState extends State<MatchScreen> {
     timer?.cancel();
     setState(() {
       // Para testeo, podrías poner timeLeft = 10;
-      timeLeft = 10;
+      timeLeft = 600;
     });
     timer = Timer.periodic(Duration(seconds: 1), (t) {
       if (timeLeft > 0) {
@@ -291,7 +291,7 @@ class _MatchScreenState extends State<MatchScreen> {
       context,
       MaterialPageRoute(
         builder: (_) => EndMatchScreen(
-          winner: 0, // Ajusta según tu criterio final.
+           // Ajusta según tu criterio final.
           pointsTeam1: pointsTeam1,
           pointsTeam2: pointsTeam2,
           pointsTeam3: pointsTeam3,
@@ -323,7 +323,7 @@ class _MatchScreenState extends State<MatchScreen> {
   void resetMatch() {
     if (!mounted) return;
     setState(() {
-      timeLeft = 10;
+      timeLeft = 600;
       goalsByPlayer.updateAll((key, value) => 0);
     });
   }
