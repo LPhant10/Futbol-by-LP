@@ -39,7 +39,7 @@ class EndMatchScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Resultado Final"),
+        title: Text(" ⚽ Resultado Final ⚽" ,style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.blue,
       ),
       body: Padding(

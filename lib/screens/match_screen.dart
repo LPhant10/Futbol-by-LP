@@ -342,16 +342,16 @@ class _MatchScreenState extends State<MatchScreen> {
     if (teams.isEmpty) {
       return Scaffold(
         appBar: AppBar(
-          title: Text("Partido", style: TextStyle(color: Colors.white)),
-          backgroundColor: Colors.red,
-        ),
+        title: Text("⚽ JUGANDO ⚽" ,style: TextStyle(color: Colors.white),),
+        backgroundColor: Colors.red,
+      ),
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Partido", style: TextStyle(color: Colors.white)),
+        title: Text("⚽ JUGANDO ⚽" ,style: TextStyle(color: Colors.white),),
         backgroundColor: Colors.red,
       ),
       body: SingleChildScrollView(
