@@ -4,7 +4,7 @@ import '../models/team.dart';
 import '../services/storage_service.dart';
 import '../services/team_service.dart';
 import '../services/team_storage_service.dart';
-import 'dart:math';
+
 
 
 class PlayersGenerateScreen extends StatefulWidget {
@@ -195,10 +195,7 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
           ...teams.asMap().entries.map((entry) {
             int index = entry.key;
             var team = entry.value;
-            // Seleccionamos aleatoriamente el cobrador del equipo (guardamos su id)
-            int? cobradorId = team.players.isNotEmpty
-                ? team.players[Random().nextInt(team.players.length)].id
-                : null;
+
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Column(
@@ -212,19 +209,12 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
                   Text("Arquero: ${team.goalkeeper?.name ?? 'Ninguno'}"),
                   Text("Puntuación Total: ${team.totalScore}"),
                   SizedBox(height: 4),
-                  Text("Cobrador: " +
-                      (cobradorId != null
-                          ? team.players.firstWhere((p) => p.id == cobradorId).name
-                          : "Ninguno")),
-                  SizedBox(height: 4),
-                  Text("Jugadores:"),
-                  ...team.players.asMap().entries.map((e) {
-                    int i = e.key;
-                    var p = e.value;
-                    // Si el jugador es el cobrador, se añade el texto "(cobrador)"
-                    String playerText = "  ${i + 1}. ${p.name} - ${p.rating}" +
-                        (cobradorId == p.id ? " ⚽ " : "");
-                    return Text(playerText);
+                 Text("Jugadores:"),
+                        ...team.players.asMap().entries.map((e) {
+                          int i = e.key;
+                          var p = e.value;
+                          String playerText = "  ${i + 1}. ${p.name} - ${p.rating}";
+                          return Text(playerText);
                   }),
                 ],
               ),
