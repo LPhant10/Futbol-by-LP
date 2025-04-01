@@ -15,7 +15,8 @@ class _GeneratedTeamsScreenState extends State<GeneratedTeamsScreen> {
   List<Player> leftovers = [];
   bool isLoading = true;
 
-  // Mapa para almacenar el cobrador asignado para cada equipo (por índice)
+  // Mapa para almacenar el cobrador asignado para cada equipo.
+  // OJO: no es final para poder mutarlo después.
   Map<int, int> _teamCobradores = {};
 
   @override
@@ -30,20 +31,30 @@ class _GeneratedTeamsScreenState extends State<GeneratedTeamsScreen> {
       teams = result["teams"];
       leftovers = result["leftovers"];
       isLoading = false;
-      // Reiniciamos el mapa de cobradores (se asignarán cuando se muestre cada equipo)
+      // Reiniciamos la asignación de cobradores cada vez que recargamos.
       _teamCobradores.clear();
     });
   }
 
+  /// Si tu modelo `Team` NO tiene un `id`, usamos directamente `teamNumber` como clave única.
+  /// Si tu modelo `Team` sí tiene un `id`, podrías hacer algo como:
+  ///   int key = team.id ?? teamNumber;
+  int _getTeamKey(int teamNumber) {
+    return teamNumber; 
+  }
+
   Widget teamWidget(Team team, int teamNumber) {
-    // Si ya se asignó un cobrador para este equipo, se usa ese; de lo contrario se asigna de forma aleatoria
-    if (!_teamCobradores.containsKey(teamNumber)) {
+    // Obtenemos la clave
+    int key = _getTeamKey(teamNumber);
+
+    // Solo asignamos cobrador si no se ha asignado antes.
+    if (!_teamCobradores.containsKey(key)) {
       if (team.players.isNotEmpty) {
-        _teamCobradores[teamNumber] =
+        _teamCobradores[key] =
             team.players[Random().nextInt(team.players.length)].id;
       }
     }
-    int? cobradorId = _teamCobradores[teamNumber];
+    int? cobradorId = _teamCobradores[key];
 
     return Card(
       margin: EdgeInsets.all(8),
@@ -57,15 +68,36 @@ class _GeneratedTeamsScreenState extends State<GeneratedTeamsScreen> {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             Text("Total de jugadores: ${team.players.length}"),
-            Text("Arquero: ${team.goalkeeper?.name ?? 'Ninguno'}", 
-            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(
+              "Arquero: ${team.goalkeeper?.name ?? 'Ninguno'}",
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
             Text("Puntuación Total: ${team.totalScore}"),
+            SizedBox(height: 4),
+            // Nombre del cobrador (si existe)
+            if (cobradorId != null)
+              Text(
+                "Cobrador: " +
+                    team.players
+                        .firstWhere(
+                          (p) => p.id == cobradorId,
+                          orElse: () => team.players.first,
+                        )
+                        .name +
+                    " ⚽",
+              )
+            else
+              Text("Cobrador: Ninguno"),
             SizedBox(height: 4),
             Text("Jugadores:"),
             ...team.players.asMap().entries.map((entry) {
               int index = entry.key;
               Player p = entry.value;
-              // Si este jugador es el cobrador, se añade el símbolo ⚽
+              // Si este jugador es el cobrador, le añadimos un "⚽"
               String playerText = "  ${index + 1}. ${p.name} - ${p.rating}" +
                   (cobradorId == p.id ? " ⚽" : "");
               return Text(playerText);
@@ -120,7 +152,7 @@ class _GeneratedTeamsScreenState extends State<GeneratedTeamsScreen> {
         padding: EdgeInsets.all(12),
         child: Column(
           children: [
-            // Primera fila: Muestra equipos 1 y 2 lado a lado (si existen)
+            // Muestra equipos 1 y 2 lado a lado (si existen)
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -128,7 +160,7 @@ class _GeneratedTeamsScreenState extends State<GeneratedTeamsScreen> {
                 if (teams.length >= 2) Expanded(child: teamWidget(teams[1], 2)),
               ],
             ),
-            // Segunda fila: Muestra equipos 3 y 4 (si existen)
+            // Muestra equipos 3 y 4 (si existen)
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -136,7 +168,7 @@ class _GeneratedTeamsScreenState extends State<GeneratedTeamsScreen> {
                 if (teams.length >= 4) Expanded(child: teamWidget(teams[3], 4)),
               ],
             ),
-            // Fila para mostrar jugadores sobrantes (si hay)
+            // Jugadores sobrantes (si hay)
             if (leftovers.isNotEmpty)
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,

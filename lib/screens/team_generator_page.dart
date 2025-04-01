@@ -23,96 +23,102 @@ class TeamGeneratorPage extends StatelessWidget {
             ),
           ),
         ),
-        
+
         // Scaffold con fondo transparente para que la imagen de fondo sea visible
         Scaffold(
           backgroundColor: Colors.transparent, // Permite ver la imagen de fondo
-          appBar: AppBar(
-            backgroundColor: Colors.green.withOpacity(0.0), // Control de transparencia aquí
-            elevation: 0, // Sin sombra debajo del AppBar
-            title: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              
-              child: Row(
-                children: [
-                  SizedBox(height: 40),
-                  Icon(
-                    Icons.sports_soccer, 
-                    color: Colors.white,
-                    size: 30,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'PICHANGA by LP ', 
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.left,
-                  ),
-                  Icon(
-                    Icons.sports_soccer, 
-                    color: Colors.white,
-                    size: 30,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          body: Center(
+
+          body: SafeArea(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  width: 200, // Tamaño fijo para todos los botones
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => PlayersGenerateScreen()),
-                      );
-                    },
-                    child: Text("Pichangeros"),
+                Padding(
+                  padding: const EdgeInsets.all(25.0),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.sports_soccer,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'PICHANGA by LP ',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        textAlign: TextAlign.left,
+                      ),
+                      Icon(
+                        Icons.sports_soccer,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(height: 16),
-                SizedBox(
-                  width: 200,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => GeneratedTeamsScreen()),
-                      );
-                    },
-                    child: Text("Ver Equipos Generados"),
-                  ),
-                ),
-                SizedBox(height: 16),
-                SizedBox(
-                  width: 200,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => MatchScreen()),
-                      );
-                    },
-                    child: Text("Ir a Partido"),
-                  ),
-                ),
-                SizedBox(height: 16),
-                SizedBox(
-                  width: 200,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => PaymentCalculatorScreen()),
-                      );
-                    },
-                    child: Text("Pagos"),
+
+                // Expande la columna para centrar los botones en la pantalla
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min, // Asegura que los botones no ocupen toda la pantalla
+                      children: [
+                        SizedBox(
+                          width: 200, // Tamaño fijo para todos los botones
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => PlayersGenerateScreen()),
+                              );
+                            },
+                            child: Text("Pichangeros"),
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        SizedBox(
+                          width: 200,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => GeneratedTeamsScreen()),
+                              );
+                            },
+                            child: Text("Ver Equipos Generados"),
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        SizedBox(
+                          width: 200,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => MatchScreen()),
+                              );
+                            },
+                            child: Text("Ir a Partido"),
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        SizedBox(
+                          width: 200,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => PaymentCalculatorScreen()),
+                              );
+                            },
+                            child: Text("Pagos"),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

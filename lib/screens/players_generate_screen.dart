@@ -195,7 +195,7 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
           ...teams.asMap().entries.map((entry) {
             int index = entry.key;
             var team = entry.value;
-
+           
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Column(
@@ -209,12 +209,15 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
                   Text("Arquero: ${team.goalkeeper?.name ?? 'Ninguno'}"),
                   Text("Puntuación Total: ${team.totalScore}"),
                   SizedBox(height: 4),
-                 Text("Jugadores:"),
-                        ...team.players.asMap().entries.map((e) {
-                          int i = e.key;
-                          var p = e.value;
-                          String playerText = "  ${i + 1}. ${p.name} - ${p.rating}";
-                          return Text(playerText);
+                  
+                  SizedBox(height: 4),
+                  Text("Jugadores:"),
+                  ...team.players.asMap().entries.map((e) {
+                    int i = e.key;
+                    var p = e.value;
+                    // Si el jugador es el cobrador, se añade el texto "(cobrador)"
+                    String playerText = "  ${i + 1}. ${p.name} - ${p.rating}";
+                    return Text(playerText);
                   }),
                 ],
               ),
