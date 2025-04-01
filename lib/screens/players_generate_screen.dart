@@ -187,9 +187,7 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
     showDialog(
   context: context,
   builder: (_) => AlertDialog(
-    title: Container(
-      child: Text("Equipos Generados", style: TextStyle(color: Colors.red)),
-    ),
+    title: Text("Equipos Generados", style: TextStyle(color: Colors.red)),
     content: SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,11 +225,11 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
                     String playerText = "  ${i + 1}. ${p.name} - ${p.rating}" +
                         (cobradorId == p.id ? " ⚽ " : "");
                     return Text(playerText);
-                  }).toList(),
+                  }),
                 ],
               ),
             );
-          }).toList(),
+          }),
           Text(
             "Jugadores Sobrantes:",
             style: TextStyle(fontWeight: FontWeight.bold),
@@ -243,7 +241,7 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
               int i = e.key;
               var p = e.value;
               return Text("  ${i + 1}. ${p.name} - ${p.rating}");
-            }).toList(),
+            }),
         ],
       ),
     ),
@@ -350,7 +348,7 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
     return _MySliverDelegate(
       minHeight: 147,
       maxHeight: 147,
-      child: _buildSliverPersistentHeader(context, false),
+      child: _buildSliverPersistentHeader(context, true),
     );
   }
   // --- Fin de widgets de encabezado fijo ---
@@ -363,6 +361,7 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
     }).toList();
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text("⚽ PICHANGEROS ⚽", style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.blue,
@@ -478,12 +477,21 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
               ),
             ),
             // Encabezado fijo: Jugadores, búsqueda y botones
+
+
+
             SliverPersistentHeader(
               pinned: true,
               delegate: _buildSliverDelegate(),
             ),
+
+            
           ];
         },
+
+
+
+
         body: CustomScrollView(
           slivers: [
             SliverFillRemaining(
