@@ -39,7 +39,7 @@ class TeamGeneratorPage extends StatelessWidget {
                       MaterialPageRoute(builder: (_) => PlayersGenerateScreen()),
                     );
                   },
-                  child: Text("Jugadores"),
+                  child: Text("Pichangeros"),
                 ),
               ),
               SizedBox(height: 16),
@@ -52,7 +52,7 @@ class TeamGeneratorPage extends StatelessWidget {
                       MaterialPageRoute(builder: (_) => GeneratedTeamsScreen()),
                     );
                   },
-                  child: Text("Ver Equipos Guardados"),
+                  child: Text("Ver Equipos Generados"),
                 ),
               ),
               SizedBox(height: 16),
