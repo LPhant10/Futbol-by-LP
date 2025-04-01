@@ -122,7 +122,7 @@ class TeamGeneratorPage extends StatelessWidget {
                                       (_) => PaymentCalculatorScreen(
                                         /* totalPlayers:
                                             0, */ // <= Se pasa un valor por defecto
-                                        fromEndMatch: false,
+                                        fromEndMatch: false, allPlayers: [],
                                       ),
                                 ),
                               );

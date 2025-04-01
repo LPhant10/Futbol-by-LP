@@ -347,37 +347,22 @@ int getTotalPlayers() {
   return total;
 }
 
-
-
-
-
-
-  /* void finishEncounter() {
-    timer?.cancel();
-    playSound('silvato.mp3');
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => EndMatchScreen(
-          pointsTeam1: pointsTeam1,
-          pointsTeam2: pointsTeam2,
-          pointsTeam3: pointsTeam3,
-          // Si tu EndMatchScreen maneja 4 equipos, deberás extenderlo también
-          mvpEquipo1: getMVPByTournamentIndex(0),
-          mvpEquipo2: getMVPByTournamentIndex(1),
-          mvpEquipo3: teams.length > 2 ? getMVPByTournamentIndex(2) : "Ninguno",
-        ),
-      ),
-    );
-    resetMatch();
-  } */
+List<String> getAllPlayers() {
+  List<String> result = [];
+  for (var t in teams) {
+    for (var p in t.players) {
+      result.add(p.name); // O el nombre que quieras
+    }
+  }
+  return result;
+}
 
 void finishEncounter() {
   timer?.cancel();
   playSound('silvato.mp3');
-  
-  // Ejemplo de totalPlayers
-  int totalPlayers = getTotalPlayers();
+
+  int totalPlayers = getTotalPlayers(); 
+  List<String> allPlayers = getAllPlayers();
 
   Navigator.pushReplacement(
     context,
@@ -388,15 +373,15 @@ void finishEncounter() {
         pointsTeam3: pointsTeam3,
         mvpEquipo1: getMVPByTournamentIndex(0),
         mvpEquipo2: getMVPByTournamentIndex(1),
-        mvpEquipo3: teams.length > 2 ? getMVPByTournamentIndex(2) : "Ninguno",
-        
-        // Aquí el nuevo parámetro
+        mvpEquipo3: (teams.length > 2) ? getMVPByTournamentIndex(2) : "Ninguno",
         totalPlayers: totalPlayers,
+        allPlayers: allPlayers,
       ),
     ),
   );
   resetMatch();
 }
+
 
 
 

@@ -10,8 +10,11 @@ class EndMatchScreen extends StatelessWidget {
   final String mvpEquipo2;
   final String mvpEquipo3;
 
-  // NUEVO: cantidad total de jugadores que participaron.
+  // Cantidad total de jugadores que participaron
   final int totalPlayers;
+
+  // Lista con los nombres (o identificadores) de todos los jugadores que jugaron
+  final List<String> allPlayers;
 
   EndMatchScreen({
     required this.pointsTeam1,
@@ -20,7 +23,8 @@ class EndMatchScreen extends StatelessWidget {
     required this.mvpEquipo1,
     required this.mvpEquipo2,
     required this.mvpEquipo3,
-    required this.totalPlayers, // lo recibimos desde MatchScreen
+    required this.totalPlayers,
+    required this.allPlayers,
   });
 
   @override
@@ -42,10 +46,13 @@ class EndMatchScreen extends StatelessWidget {
       resultText = "Empate entre los equipos: " + winningTeams.join(" y ");
     }
 
+    // Si solo 1 equipo gana => winnersCount = 1; si hay 2 o 3 empatados => winnersCount = 2 o 3
+    int winnersCount = (winningTeams.length == 1) ? 1 : winningTeams.length;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          " ⚽ Resultado Final ⚽",
+          "⚽ Resultado Final ⚽",
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.blue,
@@ -59,6 +66,7 @@ class EndMatchScreen extends StatelessWidget {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
+
             Text(
               "Puntos Acumulados:",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -67,6 +75,7 @@ class EndMatchScreen extends StatelessWidget {
             Text("Equipo 2: $pointsTeam2", style: TextStyle(fontSize: 20)),
             Text("Equipo 3: $pointsTeam3", style: TextStyle(fontSize: 20)),
             SizedBox(height: 20),
+
             Text(
               "MVP de cada equipo:",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -76,25 +85,21 @@ class EndMatchScreen extends StatelessWidget {
             Text("Equipo 3: $mvpEquipo3", style: TextStyle(fontSize: 18)),
             SizedBox(height: 20),
 
-            // BOTÓN NUEVO: para ir a la pantalla de Pagos
+            // BOTÓN para ir a la pantalla de Pagos
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder:
-                        (_) => PaymentCalculatorScreen(
-                          initialPlayers: totalPlayers,
-                          fromEndMatch: true, // Bloquea la edición
-
-                          // Si hay un solo equipo ganador, pasamos winnersCount = 1
-                          // Si hay varios, es un empate => winnersCount = winningTeams.length
-                          /*  winnersCount: winningTeams.length, */
-                        ),
+                    builder: (_) => PaymentCalculatorScreen(
+                      initialPlayers: totalPlayers,
+                      fromEndMatch: true, // Bloquea la edición de "Cantidad de jugadores"
+                      winnersCount: winnersCount, // 1 = un solo ganador, 2+ = empate
+                      allPlayers: allPlayers, // Pasamos la lista de jugadores
+                    ),
                   ),
                 );
               },
-
               child: Text("Ir a Pagos"),
             ),
 
