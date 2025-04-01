@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'payment_calculator_screen.dart';
 
 class EndMatchScreen extends StatelessWidget {
   final int pointsTeam1;
@@ -9,6 +10,9 @@ class EndMatchScreen extends StatelessWidget {
   final String mvpEquipo2;
   final String mvpEquipo3;
 
+  // NUEVO: cantidad total de jugadores que participaron.
+  final int totalPlayers;
+
   EndMatchScreen({
     required this.pointsTeam1,
     required this.pointsTeam2,
@@ -16,6 +20,7 @@ class EndMatchScreen extends StatelessWidget {
     required this.mvpEquipo1,
     required this.mvpEquipo2,
     required this.mvpEquipo3,
+    required this.totalPlayers, // lo recibimos desde MatchScreen
   });
 
   @override
@@ -39,7 +44,10 @@ class EndMatchScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(" ⚽ Resultado Final ⚽" ,style: TextStyle(color: Colors.white)),
+        title: Text(
+          " ⚽ Resultado Final ⚽",
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.blue,
       ),
       body: Padding(
@@ -51,20 +59,49 @@ class EndMatchScreen extends StatelessWidget {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
-            Text("Puntos Acumulados:",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(
+              "Puntos Acumulados:",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             Text("Equipo 1: $pointsTeam1", style: TextStyle(fontSize: 20)),
             Text("Equipo 2: $pointsTeam2", style: TextStyle(fontSize: 20)),
             Text("Equipo 3: $pointsTeam3", style: TextStyle(fontSize: 20)),
             SizedBox(height: 20),
-            Text("MVP de cada equipo:",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(
+              "MVP de cada equipo:",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             Text("Equipo 1: $mvpEquipo1", style: TextStyle(fontSize: 18)),
             Text("Equipo 2: $mvpEquipo2", style: TextStyle(fontSize: 18)),
             Text("Equipo 3: $mvpEquipo3", style: TextStyle(fontSize: 18)),
             SizedBox(height: 20),
+
+            // BOTÓN NUEVO: para ir a la pantalla de Pagos
             ElevatedButton(
               onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (_) => PaymentCalculatorScreen(
+                          initialPlayers: totalPlayers,
+                          fromEndMatch: true, // Bloquea la edición
+
+                          // Si hay un solo equipo ganador, pasamos winnersCount = 1
+                          // Si hay varios, es un empate => winnersCount = winningTeams.length
+                          /*  winnersCount: winningTeams.length, */
+                        ),
+                  ),
+                );
+              },
+
+              child: Text("Ir a Pagos"),
+            ),
+
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Regresamos al inicio
                 Navigator.pop(context);
               },
               child: Text("Volver al Inicio"),

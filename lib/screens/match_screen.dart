@@ -338,15 +338,21 @@ else if (teams.length == 4) {
   resetMatch();
 }
 
+////
+int getTotalPlayers() {
+  int total = 0;
+  for (var team in teams) {
+    total += team.players.length;
+  }
+  return total;
+}
 
 
 
 
 
 
-
-
-  void finishEncounter() {
+  /* void finishEncounter() {
     timer?.cancel();
     playSound('silvato.mp3');
     Navigator.pushReplacement(
@@ -364,7 +370,38 @@ else if (teams.length == 4) {
       ),
     );
     resetMatch();
-  }
+  } */
+
+void finishEncounter() {
+  timer?.cancel();
+  playSound('silvato.mp3');
+  
+  // Ejemplo de totalPlayers
+  int totalPlayers = getTotalPlayers();
+
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (_) => EndMatchScreen(
+        pointsTeam1: pointsTeam1,
+        pointsTeam2: pointsTeam2,
+        pointsTeam3: pointsTeam3,
+        mvpEquipo1: getMVPByTournamentIndex(0),
+        mvpEquipo2: getMVPByTournamentIndex(1),
+        mvpEquipo3: teams.length > 2 ? getMVPByTournamentIndex(2) : "Ninguno",
+        
+        // Aquí el nuevo parámetro
+        totalPlayers: totalPlayers,
+      ),
+    ),
+  );
+  resetMatch();
+}
+
+
+
+
+
 
   String getMVPByTournamentIndex(int tournamentIndex) {
     if (teams.length <= tournamentIndex) return "Ninguno";
