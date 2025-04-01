@@ -32,8 +32,10 @@ class TeamGeneratorPage extends StatelessWidget {
             elevation: 0, // Sin sombra debajo del AppBar
             title: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              
               child: Row(
                 children: [
+                  SizedBox(height: 40),
                   Icon(
                     Icons.sports_soccer, 
                     color: Colors.white,
