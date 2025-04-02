@@ -9,29 +9,25 @@ import '../services/team_storage_service.dart';
 import 'end_match_screen.dart';
 
 class MatchScreen extends StatefulWidget {
+  const MatchScreen({super.key});
+
   @override
   _MatchScreenState createState() => _MatchScreenState();
 }
 
 class _MatchScreenState extends State<MatchScreen> {
-  int timeLeft = 600; 
+  int timeLeft = 600;
   Timer? timer;
-
   bool isFlashMode = true;
   int matchCount = 0;
-
   List<Team> teams = [];
   List<int> currentMatch = [0, 1];
-
-  // Puntos para hasta 4 equipos
   int pointsTeam1 = 0;
   int pointsTeam2 = 0;
   int pointsTeam3 = 0;
-  int pointsTeam4 = 0; // <--- Necesario si manejas 4 equipos
-
+  int pointsTeam4 = 0;
   Map<int, int> goalsByPlayer = {};
   Map<int, int> overallGoalsByPlayer = {};
-
   int? lastBaseWinner;
 
   @override
@@ -40,7 +36,7 @@ class _MatchScreenState extends State<MatchScreen> {
     _loadGeneratedTeams();
   }
 
-  Future<void> _loadGeneratedTeams() async {
+   Future<void> _loadGeneratedTeams() async {
     final result = await TeamStorageService.loadTeams();
     if (result["teams"] != null && (result["teams"] as List).isNotEmpty) {
       teams = List<Team>.from(result["teams"]);
@@ -98,13 +94,13 @@ class _MatchScreenState extends State<MatchScreen> {
     playSound('silvato.mp3');
     timer?.cancel();
     setState(() {
-      timeLeft = 600; 
+      timeLeft = 600;
     });
     timer = Timer.periodic(Duration(seconds: 1), (t) {
       if (timeLeft > 0) {
-        if (mounted) setState(() => timeLeft--);
+        setState(() => timeLeft--);
       } else {
-        if (mounted) onMatchEnded();
+        onMatchEnded();
       }
     });
   }
@@ -156,7 +152,7 @@ class _MatchScreenState extends State<MatchScreen> {
     );
   }
 
-  int getTeamGoals(int teamMatchIndex) {
+   int getTeamGoals(int teamMatchIndex) {
     int actualTeamIndex = currentMatch[teamMatchIndex];
     int total = 0;
     for (var player in teams[actualTeamIndex].players) {
@@ -165,7 +161,7 @@ class _MatchScreenState extends State<MatchScreen> {
     return total;
   }
 
-  String getMVP(int teamMatchIndex) {
+    String getMVP(int teamMatchIndex) {
     int actualTeamIndex = currentMatch[teamMatchIndex];
     List<Player> teamPlayers = teams[actualTeamIndex].players;
     if (teamPlayers.isEmpty) return "Ninguno";
@@ -198,11 +194,7 @@ class _MatchScreenState extends State<MatchScreen> {
         : "Ninguno";
   }
 
-  // ----------------------------------
-  // onMatchEnded con soporte 2/3/4 equipos
-  // ----------------------------------
-
-void onMatchEnded() {
+  void onMatchEnded() {
   timer?.cancel();
   playSound('silvato.mp3');
 
@@ -357,7 +349,7 @@ List<String> getAllPlayers() {
   return result;
 }
 
-void finishEncounter() {
+  void finishEncounter() {
   timer?.cancel();
   playSound('silvato.mp3');
 
@@ -391,11 +383,6 @@ void finishEncounter() {
 }
 
 
-
-
-
-
-
   String getMVPByTournamentIndex(int tournamentIndex) {
     if (teams.length <= tournamentIndex) return "Ninguno";
     List<Player> teamPlayers = teams[tournamentIndex].players;
@@ -426,165 +413,161 @@ void finishEncounter() {
     super.dispose();
   }
 
+
+  //////////
+
   @override
-  Widget build(BuildContext context) {
-    String minutes = (timeLeft ~/ 60).toString().padLeft(2, '0');
-    String seconds = (timeLeft % 60).toString().padLeft(2, '0');
+Widget build(BuildContext context) {
+  String minutes = (timeLeft ~/ 60).toString().padLeft(2, '0');
+  String seconds = (timeLeft % 60).toString().padLeft(2, '0');
 
-    if (teams.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text("⚽ JUGANDO ⚽", style: TextStyle(color: Colors.white)),
-          backgroundColor: Colors.red,
-        ),
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
+  if (teams.isEmpty) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("⚽ JUGANDO ⚽", style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.red,
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Selector de modo.
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("Modo: ", style: TextStyle(fontSize: 18)),
-                TextButton(
-                  onPressed: () {
-                    if (!mounted) return;
-                    setState(() {
-                      isFlashMode = true;
-                    });
-                  },
-                  child: Text(
-                    "Flash",
-                    style: TextStyle(
-                      color: isFlashMode ? Colors.red : Colors.grey,
-                      fontSize: 18,
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    if (!mounted) return;
-                    setState(() {
-                      isFlashMode = false;
-                    });
-                  },
-                  child: Text(
-                    "Normal",
-                    style: TextStyle(
-                      color: !isFlashMode ? Colors.red : Colors.grey,
-                      fontSize: 18,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
-            Text(
-              "Tiempo restante: $minutes:$seconds",
-              style: TextStyle(fontSize: 32),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: startTimer,
-              child: Text("Iniciar Partido"),
-            ),
-            SizedBox(height: 20),
-            Text(
-              "Partido: Equipo ${currentMatch[0] + 1} vs Equipo ${currentMatch[1] + 1}",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            // Botones para agregar goles.
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Expanded(
-                  child: Column(
-                    children: [
-                      Text(
-                        "Equipo ${currentMatch[0] + 1}",
-                        style: TextStyle(fontSize: 20),
-                      ),
-                      Text(
-                        "Goles: ${getTeamGoals(0)}",
-                        style: TextStyle(fontSize: 20),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => addGoalToTeam(0),
-                        child: Text("+1 GOL"),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        "MVP: ${getMVP(0)}",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    children: [
-                      Text(
-                        "Equipo ${currentMatch[1] + 1}",
-                        style: TextStyle(fontSize: 20),
-                      ),
-                      Text(
-                        "Goles: ${getTeamGoals(1)}",
-                        style: TextStyle(fontSize: 20),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => addGoalToTeam(1),
-                        child: Text("+1 GOL"),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        "MVP: ${getMVP(1)}",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
-            Text(
-              "Máximo goleador: ${getMaxGoleador()}",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            Text("Puntos:", style: TextStyle(fontSize: 20)),
-            Text("Equipo 1: $pointsTeam1", style: TextStyle(fontSize: 20)),
-            Text("Equipo 2: $pointsTeam2", style: TextStyle(fontSize: 20)),
-            // Si tienes 3 o 4 equipos, puedes mostrar aquí:
-            if (teams.length >= 3)
-              Text("Equipo 3: $pointsTeam3", style: TextStyle(fontSize: 20)),
-            if (teams.length == 4)
-              Text("Equipo 4: $pointsTeam4", style: TextStyle(fontSize: 20)),
-
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: finishEncounter,
-              child: Text("Fin Encuentro"),
-            ),
-          ],
-        ),
-      ),
+      backgroundColor: Colors.black,
+      body: Center(child: CircularProgressIndicator()),
     );
   }
+
+  return GestureDetector(
+    onTap: () => FocusScope.of(context).unfocus(),
+    child: Stack(
+      children: [
+        Positioned.fill(
+          child: Opacity(
+            opacity: 0.3,
+            child: Image.asset("assets/game.jpg", fit: BoxFit.cover),
+          ),
+        ),
+        Scaffold(
+          backgroundColor: Colors.transparent,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () {
+                            FocusManager.instance.primaryFocus?.unfocus();
+                            Navigator.pop(context);
+                          },
+                        ),
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.sports_soccer, color: Colors.white, size: 28),
+                              SizedBox(width: 6),
+                              Text(
+                                "JUGANDO",
+                                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                              ),
+                              SizedBox(width: 6),
+                              Icon(Icons.sports_soccer, color: Colors.white, size: 28),
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: 48), // Para alinear el botón de la izquierda
+                      ],
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("Modo: ", style: TextStyle(fontSize: 18, color: Colors.white)),
+                      TextButton(
+                        onPressed: () {
+                          if (!mounted) return;
+                          setState(() {
+                            isFlashMode = true;
+                          });
+                        },
+                        child: Text("Flash", style: TextStyle(color: isFlashMode ? Colors.red : Colors.grey, fontSize: 18)),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          if (!mounted) return;
+                          setState(() {
+                            isFlashMode = false;
+                          });
+                        },
+                        child: Text("Normal", style: TextStyle(color: !isFlashMode ? Colors.red : Colors.grey, fontSize: 18)),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                  Text("Tiempo restante: $minutes:$seconds", style: TextStyle(fontSize: 32, color: Colors.white),),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: startTimer,
+                    child: Text("Iniciar Partido"),
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    "Partido: Equipo ${currentMatch[0] + 1} vs Equipo ${currentMatch[1] + 1}",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Text("Equipo ${currentMatch[0] + 1}", style: TextStyle(fontSize: 20, color: Colors.white)),
+                            Text("Goles: ${getTeamGoals(0)}", style: TextStyle(fontSize: 20,color: Colors.white)),
+                            ElevatedButton(
+                              onPressed: () => addGoalToTeam(0),
+                              child: Text("+1 GOL"),
+                            ),
+                            SizedBox(height: 10),
+                            Text("MVP: ${getMVP(0)}", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.white)),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Text("Equipo ${currentMatch[1] + 1}", style: TextStyle(fontSize: 20,color: Colors.white)),
+                            Text("Goles: ${getTeamGoals(1)}", style: TextStyle(fontSize: 20,color: Colors.white)),
+                            ElevatedButton(
+                              onPressed: () => addGoalToTeam(1),
+                              child: Text("+1 GOL"),
+                            ),
+                            SizedBox(height: 10),
+                            Text("MVP: ${getMVP(1)}", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.white)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                  Text("Máximo goleador: ${getMaxGoleador()}", style: 
+                  TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: Colors.white)),
+                  SizedBox(height: 20),
+                  Text("Puntos:", style: TextStyle(fontSize: 20,color: Colors.white)),
+                  Text("Equipo 1: $pointsTeam1", style: TextStyle(fontSize: 20,color: Colors.white)),
+                  Text("Equipo 2: $pointsTeam2", style: TextStyle(fontSize: 20,color: Colors.white)),
+                  if (teams.length >= 3) Text("Equipo 3: $pointsTeam3", style: TextStyle(fontSize: 20,color: Colors.white)),
+                  if (teams.length == 4) Text("Equipo 4: $pointsTeam4", style: TextStyle(fontSize: 20,color: Colors.white)),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: finishEncounter,
+                    child: Text("Fin Encuentro"),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 }

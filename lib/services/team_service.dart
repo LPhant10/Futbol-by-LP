@@ -40,19 +40,28 @@ Map<String, dynamic> generateFieldTeams(
   List<Player> leftovers = [];
 
   for (var player in players) {
-    Team team =
-        teams.reduce((t1, t2) => t1.totalScore < t2.totalScore ? t1 : t2);
-    if (team.players.length < playersPerTeam) {
-      team.players.add(player);
-      team.totalScore += player.rating;
+    // Buscar equipo con espacio y menor totalScore
+    Team? bestTeam;
+    for (var team in teams) {
+      if (team.players.length < playersPerTeam) {
+        if (bestTeam == null || team.totalScore < bestTeam.totalScore) {
+          bestTeam = team;
+        }
+      }
+    }
+
+    if (bestTeam != null) {
+      bestTeam.players.add(player);
+      bestTeam.totalScore += player.rating;
     } else {
-      leftovers.add(player);
+      leftovers.add(player); // Ya no hay espacio
     }
   }
 
   balanceTeams(teams, playersPerTeam, maxDifference: maxDifference);
   return {"teams": teams, "leftovers": leftovers};
 }
+
 
 Map<String, dynamic> generateCompleteTeams(
     List<Player> selectedPlayers, int playersPerTeam, int numberOfTeams,
@@ -71,12 +80,17 @@ Map<String, dynamic> generateCompleteTeams(
 
   // Asignar arquero en cada equipo sin quitarlo, para mantener el total de jugadores.
   for (int i = 0; i < teams.length; i++) {
+
     if (teams[i].players.any((p) => p.rating == 1)) {
       teams[i].goalkeeper = teams[i].players.firstWhere((p) => p.rating == 1);
     } else if (teams[i].players.isNotEmpty) {
       teams[i].players.sort((a, b) => a.rating.compareTo(b.rating));
       teams[i].goalkeeper = teams[i].players.first;
     }
+    if (teams[i].players.isNotEmpty) {
+    teams[i].cobradorId =
+        teams[i].players[Random().nextInt(teams[i].players.length)].id;
+  }
   }
   return {"teams": teams, "leftovers": leftovers};
 }

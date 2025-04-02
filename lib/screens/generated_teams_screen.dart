@@ -1,11 +1,11 @@
-// lib/screens/generated_teams_screen.dart
 import 'package:flutter/material.dart';
 import '../models/team.dart';
 import '../models/player.dart';
 import '../services/team_storage_service.dart';
-import 'dart:math';
 
 class GeneratedTeamsScreen extends StatefulWidget {
+  const GeneratedTeamsScreen({super.key});
+
   @override
   _GeneratedTeamsScreenState createState() => _GeneratedTeamsScreenState();
 }
@@ -14,10 +14,6 @@ class _GeneratedTeamsScreenState extends State<GeneratedTeamsScreen> {
   List<Team> teams = [];
   List<Player> leftovers = [];
   bool isLoading = true;
-
-  // Mapa para almacenar el cobrador asignado para cada equipo.
-  // OJO: no es final para poder mutarlo después.
-  Map<int, int> _teamCobradores = {};
 
   @override
   void initState() {
@@ -31,33 +27,15 @@ class _GeneratedTeamsScreenState extends State<GeneratedTeamsScreen> {
       teams = result["teams"];
       leftovers = result["leftovers"];
       isLoading = false;
-      // Reiniciamos la asignación de cobradores cada vez que recargamos.
-      _teamCobradores.clear();
     });
   }
 
-  /// Si tu modelo `Team` NO tiene un `id`, usamos directamente `teamNumber` como clave única.
-  /// Si tu modelo `Team` sí tiene un `id`, podrías hacer algo como:
-  ///   int key = team.id ?? teamNumber;
-  int _getTeamKey(int teamNumber) {
-    return teamNumber; 
-  }
-
   Widget teamWidget(Team team, int teamNumber) {
-    // Obtenemos la clave
-    int key = _getTeamKey(teamNumber);
-
-    // Solo asignamos cobrador si no se ha asignado antes.
-    if (!_teamCobradores.containsKey(key)) {
-      if (team.players.isNotEmpty) {
-        _teamCobradores[key] =
-            team.players[Random().nextInt(team.players.length)].id;
-      }
-    }
-    int? cobradorId = _teamCobradores[key];
+    int? cobradorId = team.cobradorId;
 
     return Card(
       margin: EdgeInsets.all(8),
+      color: Colors.white.withOpacity(0.6),
       child: Padding(
         padding: EdgeInsets.all(8),
         child: Column(
@@ -67,7 +45,7 @@ class _GeneratedTeamsScreenState extends State<GeneratedTeamsScreen> {
               "Equipo $teamNumber",
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            Text("Total de jugadores: ${team.players.length}"),
+            Text("Total de jugadores: ${team.players.length}",style: TextStyle(fontWeight: FontWeight.bold),),
             Text(
               "Arquero: ${team.goalkeeper?.name ?? 'Ninguno'}",
               style: TextStyle(
@@ -76,32 +54,26 @@ class _GeneratedTeamsScreenState extends State<GeneratedTeamsScreen> {
                 fontSize: 16,
               ),
             ),
-            Text("Puntuación Total: ${team.totalScore}"),
+            Text("Puntuación Total: ${team.totalScore}",style: TextStyle(fontWeight: FontWeight.bold)),
             SizedBox(height: 4),
-            // Nombre del cobrador (si existe)
             if (cobradorId != null)
               Text(
-                "Cobrador: " +
-                    team.players
-                        .firstWhere(
-                          (p) => p.id == cobradorId,
-                          orElse: () => team.players.first,
-                        )
-                        .name +
-                    " ⚽",
+                "Cobrador: ${team.players.firstWhere(
+                      (p) => p.id == cobradorId,
+                      orElse: () => team.players.first,
+                    ).name} ⚽",style: TextStyle(fontWeight: FontWeight.bold)
               )
             else
-              Text("Cobrador: Ninguno"),
+              Text("Cobrador: Ninguno",style: TextStyle(fontWeight: FontWeight.bold)),
             SizedBox(height: 4),
-            Text("Jugadores:"),
+            Text("Jugadores:", style: TextStyle(fontWeight: FontWeight.bold)),
             ...team.players.asMap().entries.map((entry) {
               int index = entry.key;
               Player p = entry.value;
-              // Si este jugador es el cobrador, le añadimos un "⚽"
-              String playerText = "  ${index + 1}. ${p.name} - ${p.rating}" +
-                  (cobradorId == p.id ? " ⚽" : "");
-              return Text(playerText);
-            }).toList(),
+              String playerText =
+                  "  ${index + 1}. ${p.name} - ${p.rating}${cobradorId == p.id ? " ⚽" : ""}";
+              return Text(playerText,style: TextStyle(fontWeight: FontWeight.bold));
+            }),
           ],
         ),
       ),
@@ -111,6 +83,7 @@ class _GeneratedTeamsScreenState extends State<GeneratedTeamsScreen> {
   Widget leftoversWidget(List<Player> leftovers) {
     return Card(
       margin: EdgeInsets.all(8),
+      color: Colors.white.withOpacity(0.9),
       child: Padding(
         padding: EdgeInsets.all(8),
         child: Column(
@@ -127,7 +100,7 @@ class _GeneratedTeamsScreenState extends State<GeneratedTeamsScreen> {
                 int index = entry.key;
                 Player p = entry.value;
                 return Text("  ${index + 1}. ${p.name} - ${p.rating}");
-              }).toList(),
+              }),
           ],
         ),
       ),
@@ -138,46 +111,94 @@ class _GeneratedTeamsScreenState extends State<GeneratedTeamsScreen> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return Scaffold(
-        appBar: AppBar(title: Text("Equipos Generados (Persistentes)")),
+        backgroundColor: Colors.black,
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("⚽ Equipos Generados ⚽", style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.orange,
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(12),
-        child: Column(
-          children: [
-            // Muestra equipos 1 y 2 lado a lado (si existen)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (teams.length >= 1) Expanded(child: teamWidget(teams[0], 1)),
-                if (teams.length >= 2) Expanded(child: teamWidget(teams[1], 2)),
-              ],
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Stack(
+        children: [
+          // Fondo
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.3,
+              child: Image.asset("assets/egene.jpg", fit: BoxFit.cover),
             ),
-            // Muestra equipos 3 y 4 (si existen)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (teams.length >= 3) Expanded(child: teamWidget(teams[2], 3)),
-                if (teams.length >= 4) Expanded(child: teamWidget(teams[3], 4)),
-              ],
-            ),
-            // Jugadores sobrantes (si hay)
-            if (leftovers.isNotEmpty)
-              Row(
+          ),
+          Scaffold(
+            backgroundColor: Colors.transparent,
+            body: SafeArea(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(child: leftoversWidget(leftovers)),
+                  IconButton(
+                    icon: Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () {
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      Navigator.pop(context);
+                    },
+                  ),
+                  // Botón y título
+                  Padding(
+                    padding: const EdgeInsets.all(25.0),
+                    child: Row(
+                      children: [
+                        Icon(Icons.sports_soccer, color: Colors.white, size: 30),
+                        SizedBox(width: 8),
+                        Text(
+                          'EQUIPOS GENERADOS',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Icon(Icons.sports_soccer, color: Colors.white, size: 30),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.all(12),
+                      child: Column(
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (teams.isNotEmpty)
+                                Expanded(child: teamWidget(teams[0], 1)),
+                              if (teams.length >= 2)
+                                Expanded(child: teamWidget(teams[1], 2)),
+                            ],
+                          ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (teams.length >= 3)
+                                Expanded(child: teamWidget(teams[2], 3)),
+                              if (teams.length >= 4)
+                                Expanded(child: teamWidget(teams[3], 4)),
+                            ],
+                          ),
+                          if (leftovers.isNotEmpty)
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(child: leftoversWidget(leftovers)),
+                              ],
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
-          ],
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }

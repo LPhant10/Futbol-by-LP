@@ -4,8 +4,10 @@ class Team {
   List<Player> players;
   int totalScore;
   Player? goalkeeper;
+  int? cobradorId;
+  
 
-  Team({List<Player>? players, this.totalScore = 0, this.goalkeeper})
+  Team({List<Player>? players, this.totalScore = 0, this.goalkeeper, this.cobradorId,})
       : players = players ?? [];
 
   Map<String, dynamic> toJson() {
@@ -13,6 +15,8 @@ class Team {
       'players': players.map((p) => p.toJson()).toList(),
       'totalScore': totalScore,
       'goalkeeper': goalkeeper?.toJson(),
+      'cobradorId': cobradorId,
+      
     };
   }
 
@@ -25,6 +29,7 @@ class Team {
       goalkeeper: json['goalkeeper'] != null
           ? Player.fromJson(json['goalkeeper'])
           : null,
+      cobradorId: json['cobradorId'],
     );
   }
 }

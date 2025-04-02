@@ -7,12 +7,12 @@ class PaymentCalculatorScreen extends StatefulWidget {
   final List<String> allPlayers; // Para el control de pagos individual
 
   const PaymentCalculatorScreen({
-    Key? key,
+    super.key,
     this.initialPlayers,
     this.fromEndMatch = false,
     this.winnersCount = 0,
     required this.allPlayers,
-  }) : super(key: key);
+  });
 
   @override
   _PaymentCalculatorScreenState createState() =>
