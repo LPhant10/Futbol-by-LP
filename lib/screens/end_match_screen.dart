@@ -152,17 +152,15 @@ class EndMatchScreen extends StatelessWidget {
                           Center(
                             child: ElevatedButton(
                               onPressed: () {
-                                Navigator.pushReplacement(
+                                Navigator.push(
   context,
-  PageRouteBuilder(
-    pageBuilder: (_, __, ___) => PaymentCalculatorScreen(
+  MaterialPageRoute(
+    builder: (_) => PaymentCalculatorScreen(
       initialPlayers: totalPlayers,
       fromEndMatch: true,
       winnersCount: winnersCount,
       allPlayers: allPlayers,
     ),
-    transitionDuration: Duration.zero,
-    reverseTransitionDuration: Duration.zero,
   ),
 );
 

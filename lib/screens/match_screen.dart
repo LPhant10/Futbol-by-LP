@@ -395,10 +395,6 @@ List<String> getAllPlayers() {
         pointsTeam3: pointsTeam3,
         pointsTeam4: pointsTeam4,
         
-        
-        
-       
-
         mvpEquipo1: getMVPByTournamentIndex(0),
         mvpEquipo2: getMVPByTournamentIndex(1),
         mvpEquipo3: (teams.length > 2) ? getMVPByTournamentIndex(2) : "Ninguno",
@@ -479,7 +475,7 @@ Widget build(BuildContext context) {
               child: Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.all(20.0),
+                    padding: const EdgeInsets.all(5.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
