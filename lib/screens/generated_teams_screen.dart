@@ -83,7 +83,7 @@ class _GeneratedTeamsScreenState extends State<GeneratedTeamsScreen> {
   Widget leftoversWidget(List<Player> leftovers) {
     return Card(
       margin: EdgeInsets.all(8),
-      color: Colors.white.withOpacity(0.9),
+      color: Colors.white.withOpacity(0.6),
       child: Padding(
         padding: EdgeInsets.all(8),
         child: Column(
@@ -94,12 +94,12 @@ class _GeneratedTeamsScreenState extends State<GeneratedTeamsScreen> {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             if (leftovers.isEmpty)
-              Text("  Ninguno")
+              Text("  Ninguno", style: TextStyle(fontWeight: FontWeight.bold))
             else
               ...leftovers.asMap().entries.map((entry) {
                 int index = entry.key;
                 Player p = entry.value;
-                return Text("  ${index + 1}. ${p.name} - ${p.rating}");
+                return Text("  ${index + 1}. ${p.name} - ${p.rating}", style: TextStyle(fontWeight: FontWeight.bold));
               }),
           ],
         ),

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-
 import 'players_generate_screen.dart';
 import 'match_screen.dart';
 import 'generated_teams_screen.dart';
-import 'payment_calculator_screen.dart'; // Corregido el nombre del archivo
-
+import 'payment_calculator_screen.dart';
 
 class TeamGeneratorPage extends StatelessWidget {
   const TeamGeneratorPage({super.key});
@@ -13,128 +11,66 @@ class TeamGeneratorPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Imagen de fondo que ocupa toda la pantalla
+        // Fondo
         Positioned.fill(
-          child: Opacity(
-            opacity: 0.3, // Ajusta la opacidad si deseas
+          child: AnimatedOpacity(
+            opacity: 0.3,
+            duration: Duration(milliseconds: 300),
             child: Image.asset(
-              "assets/fondoP.jpg", // Ruta de la imagen
-              fit:
-                  BoxFit
-                      .cover, // Esto asegura que la imagen cubra toda la pantalla
+              "assets/fondoP.jpg",
+              fit: BoxFit.cover,
               width: double.infinity,
               height: double.infinity,
             ),
           ),
         ),
-        // Scaffold con fondo transparente para que la imagen de fondo sea visible
         Scaffold(
-          backgroundColor: Colors.transparent, // Permite ver la imagen de fondo
-
+          backgroundColor: Colors.transparent,
           body: SafeArea(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(25.0),
+                SizedBox(height: 50),
+
+                // TÍTULO CENTRADO
+                Center(
                   child: Row(
-                    children: [
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
                       Icon(Icons.sports_soccer, color: Colors.white, size: 30),
                       SizedBox(width: 8),
                       Text(
-                        'PICHANGA by LP ',
+                        'PICHANGA by LP',
                         style: TextStyle(
-                          fontSize: 22,
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
-                        textAlign: TextAlign.left,
                       ),
+                      SizedBox(width: 8),
                       Icon(Icons.sports_soccer, color: Colors.white, size: 30),
                     ],
                   ),
                 ),
-                // Expande la columna para centrar los botones en la pantalla
+
+                const SizedBox(height: 40),
+
+                // BOTONES
                 Expanded(
                   child: Center(
                     child: Column(
-                      mainAxisSize:
-                          MainAxisSize
-                              .min, // Asegura que los botones no ocupen toda la pantalla
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        SizedBox(
-                          width: 200, // Tamaño fijo para todos los botones
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => PlayersGenerateScreen(),
-                                ),
-                              );
-                            },
-                            child: Text("Pichangeros"),
+                        buildZeroTransitionButton(context, "Pichangeros", const PlayersGenerateScreen()),
+                        buildZeroTransitionButton(context, "Ver Equipos Generados", const GeneratedTeamsScreen()),
+                        buildZeroTransitionButton(context, "Ir a Partido", const MatchScreen()),
+                        buildZeroTransitionButton(
+                          context,
+                          "Pagos",
+                          const PaymentCalculatorScreen(
+                            fromEndMatch: false,
+                            allPlayers: [],
                           ),
                         ),
-                        SizedBox(height: 16),
-                        SizedBox(
-                          width: 200,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => GeneratedTeamsScreen(),
-                                ),
-                              );
-                            },
-                            child: Text("Ver Equipos Generados"),
-                          ),
-                        ),
-                        SizedBox(height: 16),
-                        SizedBox(
-                          width: 200,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => MatchScreen(),
-                                ),
-                              );
-                            },
-                            child: Text("Ir a Partido"),
-                          ),
-                        ),
-
-                        // En TeamGeneratorPage.dart
-                        SizedBox(height: 16),
-                        SizedBox(
-                          width: 200,
-                          child: ElevatedButton(
-                            onPressed: () {
-
-
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder:
-                                      (_) => PaymentCalculatorScreen(
-                                        /* totalPlayers:
-                                            0, */ // <= Se pasa un valor por defecto
-                                            
-                                        fromEndMatch: false, allPlayers: [],
-                                      ),
-                                ),
-                              );
-                            },
-                            
-                            child: Text("Pagos"),
-                          ),
-                        ),
-
-                        
                       ],
                     ),
                   ),
@@ -146,4 +82,28 @@ class TeamGeneratorPage extends StatelessWidget {
       ],
     );
   }
+
+  /// Botón con push sin transición (elimina parpadeo)
+ Widget buildZeroTransitionButton(BuildContext context, String label, Widget screen) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: SizedBox(
+      width: 200,
+      child: ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (_, __, ___) => screen,
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
+            ),
+          );
+        },
+        child: Text(label),
+      ),
+    ),
+  );
+}
+
 }

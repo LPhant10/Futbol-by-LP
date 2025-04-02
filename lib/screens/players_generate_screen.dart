@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sorteo_lp/screens/team_generator_page.dart';
 import '../models/player.dart';
 import '../models/team.dart';
 import '../services/storage_service.dart';
@@ -283,8 +284,9 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
         body: Stack(
           children: [
             Positioned.fill(
-              child: Opacity(
+              child: AnimatedOpacity(
                 opacity: 0.25,
+                duration: Duration(milliseconds: 300),
                 child: Image.asset('assets/pichangeros.jpg', fit: BoxFit.cover),
               ),
             ),
@@ -300,11 +302,19 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
                       children: [
                         // Botón de retroceso alineado a la izquierda
                         IconButton(
-                          icon: Icon(Icons.arrow_back, color: Colors.white),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                        ),
+  icon: Icon(Icons.arrow_back, color: Colors.white),
+  onPressed: () {
+    FocusManager.instance.primaryFocus?.unfocus();
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const TeamGeneratorPage(),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
+  },
+),
+
 
                         // Espacio para centrar el título visualmente
                         Expanded(
@@ -329,7 +339,8 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
                         ),
 
                         // Ícono invisible para balancear el espacio del botón de retroceso
-                        Opacity(
+                        AnimatedOpacity(
+                          duration: Duration(milliseconds: 300),
                           opacity: 0,
                           child: IconButton(
                             icon: Icon(Icons.arrow_back),

@@ -152,7 +152,8 @@ class _PaymentCalculatorScreenState extends State<PaymentCalculatorScreen> {
         children: [
           // Imagen de fondo
           Positioned.fill(
-            child: Opacity(
+            child: AnimatedOpacity(
+              duration: Duration(milliseconds: 300),
               opacity: 0.3,
               child: Image.asset("assets/pagos.jpg", fit: BoxFit.cover),
             ),
