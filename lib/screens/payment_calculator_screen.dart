@@ -68,62 +68,67 @@ class _PaymentCalculatorScreenState extends State<PaymentCalculatorScreen> {
 
   /// Lógica "personalizada": si el usuario ingresa cuántos ganadores hubo.
   void calcularPagoPersonalizado(int ganadores) {
-  int totalJugadores = int.tryParse(jugadoresController.text) ?? 0;
-  double precioCancha = double.tryParse(canchaController.text) ?? 0.0;
-  double apuesta = double.tryParse(apuestaController.text) ?? 0.0;
+    int totalJugadores = int.tryParse(jugadoresController.text) ?? 0;
+    double precioCancha = double.tryParse(canchaController.text) ?? 0.0;
+    double apuesta = double.tryParse(apuestaController.text) ?? 0.0;
 
-  if (totalJugadores <= 0 || precioCancha <= 0 || apuesta < 0) {
+    if (totalJugadores <= 0 || precioCancha <= 0 || apuesta < 0) {
+      setState(() {
+        resultado = "Por favor, ingrese valores válidos.";
+      });
+      return;
+    }
+
+    if (ganadores < 0 || ganadores > totalJugadores) {
+      setState(() {
+        resultado = "Cantidad de ganadores inválida.";
+      });
+      return;
+    }
+
+    // Cada jugador paga su parte de la cancha
+    double costoPorJugador = precioCancha / totalJugadores;
+
+    if (ganadores == totalJugadores) {
+      // En caso de empate, todos pagan solo su parte de la cancha
+      setState(() {
+        resultado =
+            "Empate. Todos pagan: S/ ${costoPorJugador.toStringAsFixed(2)}";
+      });
+      return;
+    }
+
+    int perdedores = totalJugadores - ganadores;
+    double pagoPerdedor = costoPorJugador + apuesta;
+
+    // Dinero total acumulado por las apuestas de los perdedores
+    double dineroDisponible = perdedores * apuesta;
+
+    // Cada ganador recibe una parte equitativa del dinero acumulado
+    double gananciaPorGanador = dineroDisponible / ganadores;
+
+    // Los ganadores pagan su parte de la cancha pero reciben su ganancia
+    double pagoGanador = (costoPorJugador - gananciaPorGanador).clamp(
+      0,
+      costoPorJugador,
+    );
+
+    // Ganancia neta de los ganadores
+    double gananciaNeta = (gananciaPorGanador - costoPorJugador).clamp(
+      0,
+      gananciaPorGanador,
+    );
+
     setState(() {
-      resultado = "Por favor, ingrese valores válidos.";
+      resultado =
+          "Total jugadores → $totalJugadores\n"
+          "Cada jugador paga su parte de la cancha → S/ ${costoPorJugador.toStringAsFixed(2)}\n"
+          "Perdedores pagan su apuesta completa → S/ ${pagoPerdedor.toStringAsFixed(2)}\n"
+          "Ganadores pagan solo su cancha → S/ ${pagoGanador.toStringAsFixed(2)}\n"
+          // "Ganadores reciben → S/ ${gananciaPorGanador.toStringAsFixed(2)}\n"
+          "Ganancia total - su cancha: S/ ${gananciaNeta.toStringAsFixed(2)}";
     });
-    return;
   }
-
-  if (ganadores < 0 || ganadores > totalJugadores) {
-    setState(() {
-      resultado = "Cantidad de ganadores inválida.";
-    });
-    return;
-  }
-
-  // Cada jugador paga su parte de la cancha
-  double costoPorJugador = precioCancha / totalJugadores;
-
-  if (ganadores == totalJugadores) {
-    // En caso de empate, todos pagan solo su parte de la cancha
-    setState(() {
-      resultado = "Empate. Todos pagan: S/ ${costoPorJugador.toStringAsFixed(2)}";
-    });
-    return;
-  }
-
-  int perdedores = totalJugadores - ganadores;
-  double pagoPerdedor = costoPorJugador + apuesta;
-
-  // Dinero total acumulado por las apuestas de los perdedores
-  double dineroDisponible = perdedores * apuesta;
-
-  // Cada ganador recibe una parte equitativa del dinero acumulado
-  double gananciaPorGanador = dineroDisponible / ganadores;
-
-  // Los ganadores pagan su parte de la cancha pero reciben su ganancia
-  double pagoGanador = (costoPorJugador - gananciaPorGanador).clamp(0, costoPorJugador);
-
-
-  // Ganancia neta de los ganadores
-  double gananciaNeta = (gananciaPorGanador - costoPorJugador).clamp(0, gananciaPorGanador);
-
-  setState(() {
-    resultado = "Total jugadores → $totalJugadores\n"
-        "Cada jugador paga su parte de la cancha → S/ ${costoPorJugador.toStringAsFixed(2)}\n"
-        "Perdedores pagan su apuesta completa → S/ ${pagoPerdedor.toStringAsFixed(2)}\n"
-        "Ganadores pagan solo su cancha → S/ ${pagoGanador.toStringAsFixed(2)}\n"
-       // "Ganadores reciben → S/ ${gananciaPorGanador.toStringAsFixed(2)}\n"
-        "Ganancia total - su cancha: S/ ${gananciaNeta.toStringAsFixed(2)}";
-  });
-}
-
-
 
   //
   @override
@@ -150,13 +155,50 @@ class _PaymentCalculatorScreenState extends State<PaymentCalculatorScreen> {
         ),
         Scaffold(
           backgroundColor: Colors.transparent,
-          appBar: AppBar(
+          /*  appBar: AppBar(
             title: Text("Calculadora de Pagos by LPhant"),
             backgroundColor: Colors.red,
-          ),
+          ), */
           body: SafeArea(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+
               children: [
+                IconButton(
+                  icon: Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(25.0),
+                  child: Row(
+                    children: [
+                      SizedBox(height: 25),
+                      Icon(
+                        Icons.monetization_on_outlined,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'PAGOS ',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        textAlign: TextAlign.left,
+                      ),
+                      Icon(
+                        Icons.monetization_on_outlined,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                    ],
+                  ),
+                ),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: EdgeInsets.all(16),
