@@ -29,6 +29,9 @@ class _MatchScreenState extends State<MatchScreen> {
   Map<int, int> goalsByPlayer = {};
   Map<int, int> overallGoalsByPlayer = {};
   int? lastBaseWinner;
+  bool isPaused = false;
+  final TextEditingController _durationController = TextEditingController(text: "10"); // duración en minutos
+
 
   @override
   void initState() {
@@ -91,19 +94,46 @@ class _MatchScreenState extends State<MatchScreen> {
   }
 
   void startTimer() {
-    playSound('silvato.mp3');
-    timer?.cancel();
-    setState(() {
-      timeLeft = 600;
-    });
-    timer = Timer.periodic(Duration(seconds: 1), (t) {
-      if (timeLeft > 0) {
-        setState(() => timeLeft--);
-      } else {
-        onMatchEnded();
-      }
-    });
+  final int? customMinutes = int.tryParse(_durationController.text.trim());
+  if (customMinutes == null || customMinutes <= 0) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Ingrese un tiempo válido en minutos")),
+    );
+    return;
   }
+
+  playSound('silvato.mp3');
+  timer?.cancel();
+
+  setState(() {
+    timeLeft = customMinutes * 60;
+    isPaused = false;
+  });
+
+  timer = Timer.periodic(Duration(seconds: 1), (t) {
+    if (!isPaused && timeLeft > 0) {
+      setState(() {
+        timeLeft--;
+      });
+    } else if (timeLeft == 0) {
+      onMatchEnded();
+    }
+  });
+}
+
+void togglePause() {
+  setState(() {
+    isPaused = !isPaused;
+  });
+}
+void resetTimer() {
+  timer?.cancel();
+  setState(() {
+    timeLeft = 600;
+    isPaused = false;
+  });
+}
+
 
   Future<void> playSound(String assetName) async {
     final player = AudioPlayer();
@@ -410,6 +440,7 @@ List<String> getAllPlayers() {
   @override
   void dispose() {
     timer?.cancel();
+    _durationController.dispose();
     super.dispose();
   }
 
@@ -417,7 +448,9 @@ List<String> getAllPlayers() {
   //////////
 
   @override
+  
 Widget build(BuildContext context) {
+  
   String minutes = (timeLeft ~/ 60).toString().padLeft(2, '0');
   String seconds = (timeLeft % 60).toString().padLeft(2, '0');
 
@@ -501,12 +534,53 @@ Widget build(BuildContext context) {
                     ],
                   ),
                   SizedBox(height: 16),
-                  Text("Tiempo restante: $minutes:$seconds", style: TextStyle(fontSize: 32, color: Colors.white),),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: startTimer,
-                    child: Text("Iniciar Partido"),
-                  ),
+
+                  Text("Tiempo restante: $minutes:$seconds", style: TextStyle(fontSize: 32, color: Colors.white)),
+SizedBox(height: 12),
+Row(
+  mainAxisAlignment: MainAxisAlignment.center,
+  children: [
+    Text("Duración (min): ", style: TextStyle(color: Colors.white)),
+    SizedBox(
+      width: 60,
+      child: TextField(
+        controller: _durationController,
+        keyboardType: TextInputType.number,
+        style: TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          contentPadding: EdgeInsets.symmetric(horizontal: 8),
+          filled: true,
+          fillColor: Colors.black.withOpacity(0.3),
+          border: OutlineInputBorder(),
+        ),
+      ),
+    ),
+  ],
+),
+SizedBox(height: 12),
+
+
+
+                  Row(
+  mainAxisAlignment: MainAxisAlignment.center,
+  children: [
+    ElevatedButton(
+      onPressed: startTimer,
+      child: Text("Iniciar"),
+    ),
+    SizedBox(width: 10),
+    ElevatedButton(
+      onPressed: togglePause,
+      child: Text(isPaused ? "Reanudar" : "Pausar"),
+    ),
+    SizedBox(width: 10),
+    ElevatedButton(
+      onPressed: resetTimer,
+      child: Text("Reiniciar"),
+    ),
+  ],
+),
+
                   SizedBox(height: 20),
                   Text(
                     "Partido: Equipo ${currentMatch[0] + 1} vs Equipo ${currentMatch[1] + 1}",
