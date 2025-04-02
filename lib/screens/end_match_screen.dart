@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:sorteo_lp/screens/match_screen.dart';
 import 'payment_calculator_screen.dart';
 
 class EndMatchScreen extends StatelessWidget {
@@ -81,9 +82,17 @@ class EndMatchScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           IconButton(
-                            icon: Icon(Icons.arrow_back, color: Colors.white),
-                            onPressed: () => Navigator.pop(context),
-                          ),
+  icon: Icon(Icons.arrow_back, color: Colors.white),
+  onPressed: () {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const MatchScreen(),
+      ),
+    );
+  },
+),
+
                           Expanded(
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
