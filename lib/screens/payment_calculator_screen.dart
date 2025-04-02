@@ -45,7 +45,7 @@ class _PaymentCalculatorScreenState extends State<PaymentCalculatorScreen> {
   void calcularPagoRapido({required bool empate}) {
     int totalJugadores = int.tryParse(jugadoresController.text) ?? 0;
     double precioCancha = double.tryParse(canchaController.text) ?? 0.0;
-    double apuesta = double.tryParse(apuestaController.text) ?? 0.0;
+    //double apuesta = double.tryParse(apuestaController.text) ?? 0.0;
 
     if (totalJugadores <= 0) {
       setState(() {
@@ -114,11 +114,11 @@ class _PaymentCalculatorScreenState extends State<PaymentCalculatorScreen> {
   double gananciaNeta = (gananciaPorGanador - costoPorJugador).clamp(0, gananciaPorGanador);
 
   setState(() {
-    resultado = "Total jugadores: $totalJugadores\n"
+    resultado = "Total jugadores → $totalJugadores\n"
         "Cada jugador paga su parte de la cancha → S/ ${costoPorJugador.toStringAsFixed(2)}\n"
         "Perdedores pagan su apuesta completa → S/ ${pagoPerdedor.toStringAsFixed(2)}\n"
         "Ganadores pagan solo su cancha → S/ ${pagoGanador.toStringAsFixed(2)}\n"
-        "Ganadores reciben → S/ ${gananciaPorGanador.toStringAsFixed(2)}\n"
+       // "Ganadores reciben → S/ ${gananciaPorGanador.toStringAsFixed(2)}\n"
         "Ganancia total - su cancha: S/ ${gananciaNeta.toStringAsFixed(2)}";
   });
 }
