@@ -371,9 +371,17 @@ void finishEncounter() {
         pointsTeam1: pointsTeam1,
         pointsTeam2: pointsTeam2,
         pointsTeam3: pointsTeam3,
+        pointsTeam4: pointsTeam4,
+        
+        
+        
+       
+
         mvpEquipo1: getMVPByTournamentIndex(0),
         mvpEquipo2: getMVPByTournamentIndex(1),
         mvpEquipo3: (teams.length > 2) ? getMVPByTournamentIndex(2) : "Ninguno",
+        mvpEquipo4: getMVPByTournamentIndex(3),
+        
         totalPlayers: totalPlayers,
         allPlayers: allPlayers,
       ),

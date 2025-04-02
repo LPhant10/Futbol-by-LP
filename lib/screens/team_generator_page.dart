@@ -5,6 +5,7 @@ import 'match_screen.dart';
 import 'generated_teams_screen.dart';
 import 'payment_calculator_screen.dart'; // Corregido el nombre del archivo
 
+
 class TeamGeneratorPage extends StatelessWidget {
   const TeamGeneratorPage({super.key});
 
@@ -122,6 +123,7 @@ class TeamGeneratorPage extends StatelessWidget {
                                       (_) => PaymentCalculatorScreen(
                                         /* totalPlayers:
                                             0, */ // <= Se pasa un valor por defecto
+                                            
                                         fromEndMatch: false, allPlayers: [],
                                       ),
                                 ),

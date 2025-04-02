@@ -15,7 +15,8 @@ class PaymentCalculatorScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _PaymentCalculatorScreenState createState() => _PaymentCalculatorScreenState();
+  _PaymentCalculatorScreenState createState() =>
+      _PaymentCalculatorScreenState();
 }
 
 class _PaymentCalculatorScreenState extends State<PaymentCalculatorScreen> {
@@ -57,82 +58,82 @@ class _PaymentCalculatorScreenState extends State<PaymentCalculatorScreen> {
     if (empate) {
       // Caso Empate: todos pagan lo mismo (solo la cancha).
       setState(() {
-        resultado = "Total jugadores: $totalJugadores\n"
+        resultado =
+            "Total jugadores: $totalJugadores\n"
             "Cada jugador paga (cancha): S/ ${costoPorJugador.toStringAsFixed(2)}\n"
             "(La apuesta se anula o se reparte entre todos)";
-      });
-    } else {
-      // Caso "Un solo ganador" => supondremos 1 ganador y (totalJugadores - 1) perdedores.
-      int ganadores = 1;
-      int perdedores = totalJugadores - ganadores;
-
-      double pagoPerdedor = costoPorJugador + apuesta;
-      // Apuesta total = perdedores * apuesta
-      double descuento = (perdedores * apuesta) / ganadores; 
-      // Pago del ganador (con clamp a 0 si excede)
-      double pagoGanador = costoPorJugador - descuento;
-      if (pagoGanador < 0) {
-        pagoGanador = 0;
-      }
-
-      // Ganancia extra si sobró
-      double sobra = (perdedores * apuesta) - (descuento * ganadores);
-      // Normalmente quedaría en 0, pero si el descuento superó el costo, sobraría algo.
-
-      setState(() {
-        resultado = "Total jugadores: $totalJugadores\n"
-            "Cada jugador paga (cancha): S/ ${costoPorJugador.toStringAsFixed(2)}\n"
-            "Jugadores perdedores pagan: S/ ${pagoPerdedor.toStringAsFixed(2)}\n"
-            "Jugador ganador paga: S/ ${pagoGanador.toStringAsFixed(2)}\n"
-            "Jugador ganador gana: S/ ${sobra.toStringAsFixed(2)}";
       });
     }
   }
 
   /// Lógica "personalizada": si el usuario ingresa cuántos ganadores hubo.
   void calcularPagoPersonalizado(int ganadores) {
-    int totalJugadores = int.tryParse(jugadoresController.text) ?? 0;
-    double precioCancha = double.tryParse(canchaController.text) ?? 0.0;
-    double apuesta = double.tryParse(apuestaController.text) ?? 0.0;
+  int totalJugadores = int.tryParse(jugadoresController.text) ?? 0;
+  double precioCancha = double.tryParse(canchaController.text) ?? 0.0;
+  double apuesta = double.tryParse(apuestaController.text) ?? 0.0;
 
-    if (totalJugadores <= 0) {
-      setState(() {
-        resultado = "Por favor, ingrese valores válidos";
-      });
-      return;
-    }
-    if (ganadores <= 0 || ganadores >= totalJugadores) {
-      setState(() {
-        resultado = "Cantidad de ganadores inválida (0 o mayor al total).";
-      });
-      return;
-    }
-
-    double costoPorJugador = precioCancha / totalJugadores;
-    int perdedores = totalJugadores - ganadores;
-
-    double pagoPerdedor = costoPorJugador + apuesta;
-
-    // Apuesta total de los perdedores
-    double apuestaTotal = perdedores * apuesta;
-    // Descuento que se reparte entre los ganadores
-    double descuento = apuestaTotal / ganadores;
-    double pagoGanador = costoPorJugador - descuento;
-    if (pagoGanador < 0) {
-      pagoGanador = 0; // No pueden pagar negativo
-    }
-
-    // Sobra si el descuento superó el costo
-    double sobra = apuestaTotal - (descuento * ganadores);
-
+  if (totalJugadores <= 0 || precioCancha <= 0 || apuesta < 0) {
     setState(() {
-      resultado = "Total jugadores: $totalJugadores\n"
-          "Cada jugador paga (cancha): S/ ${costoPorJugador.toStringAsFixed(2)}\n"
-          "Jugadores perdedores pagan: S/ ${pagoPerdedor.toStringAsFixed(2)}\n"
-          "Jugadores ganadores pagan: S/ ${pagoGanador.toStringAsFixed(2)}\n"
-          "Jugadores ganadores ganan: S/ ${sobra.toStringAsFixed(2)}";
+      resultado = "Por favor, ingrese valores válidos.";
     });
+    return;
   }
+
+  if (ganadores < 0 || ganadores > totalJugadores) {
+    setState(() {
+      resultado = "Cantidad de ganadores inválida.";
+    });
+    return;
+  }
+
+  // Cada jugador paga su parte de la cancha
+  double costoPorJugador = precioCancha / totalJugadores;
+
+  if (ganadores == totalJugadores) {
+    // En caso de empate, todos pagan solo su parte de la cancha
+    setState(() {
+      resultado = "Empate. Todos pagan: S/ ${costoPorJugador.toStringAsFixed(2)}";
+    });
+    return;
+  }
+
+  int perdedores = totalJugadores - ganadores;
+  double pagoPerdedor = costoPorJugador + apuesta;
+
+  // Dinero total acumulado por las apuestas de los perdedores
+  double dineroDisponible = perdedores * apuesta;
+
+  // Cada ganador recibe una parte equitativa del dinero acumulado
+  double gananciaPorGanador = dineroDisponible / ganadores;
+
+  // Los ganadores pagan su parte de la cancha pero reciben su ganancia
+  double pagoGanador = (costoPorJugador - gananciaPorGanador).clamp(0, costoPorJugador);
+
+
+  // Ganancia neta de los ganadores
+  double gananciaNeta = (gananciaPorGanador - costoPorJugador).clamp(0, gananciaPorGanador);
+
+  setState(() {
+    resultado = "Total jugadores: $totalJugadores\n"
+        "Cada jugador paga su parte de la cancha → S/ ${costoPorJugador.toStringAsFixed(2)}\n"
+        "Perdedores pagan su apuesta completa → S/ ${pagoPerdedor.toStringAsFixed(2)}\n"
+        "Ganadores pagan solo su cancha → S/ ${pagoGanador.toStringAsFixed(2)}\n"
+        "Ganadores reciben → S/ ${gananciaPorGanador.toStringAsFixed(2)}\n"
+        "Ganancia total - su cancha: S/ ${gananciaNeta.toStringAsFixed(2)}";
+  });
+}
+
+
+
+  //
+  @override
+  void dispose() {
+    jugadoresController.dispose();
+    canchaController.dispose();
+    apuestaController.dispose();
+    super.dispose();
+  }
+  //
 
   @override
   Widget build(BuildContext context) {
@@ -144,13 +145,10 @@ class _PaymentCalculatorScreenState extends State<PaymentCalculatorScreen> {
         Positioned.fill(
           child: Opacity(
             opacity: 0.3,
-            child: Image.asset(
-              "assets/pagos.jpg",
-              fit: BoxFit.cover,
-            ),
+            child: Image.asset("assets/pagos.jpg", fit: BoxFit.cover),
           ),
         ),
-       /*  Scaffold(
+        Scaffold(
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             title: Text("Calculadora de Pagos by LPhant"),
@@ -165,7 +163,6 @@ class _PaymentCalculatorScreenState extends State<PaymentCalculatorScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-
                         // Campo "Cantidad de jugadores"
                         TextField(
                           controller: jugadoresController,
@@ -199,79 +196,7 @@ class _PaymentCalculatorScreenState extends State<PaymentCalculatorScreen> {
                             filled: true,
                           ),
                         ),
-                        SizedBox(height: 20), */
-                         Scaffold(
-          backgroundColor: Colors.transparent,
-          body: SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Botón de retroceso
-                SizedBox(height: 10),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(Icons.arrow_back, color: Colors.white),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text(
-                    '💰 PAGOS!! 💰',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.left,
-                  ),
-                ),
-                SizedBox(height: 10),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Campo "Cantidad de jugadores"
-                          TextField(
-                            controller: jugadoresController,
-                            readOnly: widget.fromEndMatch, 
-                            // si fromEndMatch es true, el usuario NO puede cambiar
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              labelText: 'Cantidad de jugadores',
-                              fillColor: Colors.white,
-                              filled: true,
-                            ),
-                          ),
-                          SizedBox(height: 12),
-
-                          // Campo "Precio de la cancha"
-                          TextField(
-                            controller: canchaController,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              labelText: 'Precio de la cancha',
-                              fillColor: Colors.white,
-                              filled: true,
-                            ),
-                          ),
-                          SizedBox(height: 12),
-
-                          // Campo "Cantidad de apuesta por jugador"
-                          TextField(
-                            controller: apuestaController,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              labelText: 'Cantidad de apuesta por jugador',
-                              fillColor: Colors.white,
-                              filled: true,
-                            ),
-                          ),
-                          SizedBox(height: 20),
-                      
-                       
+                        SizedBox(height: 20),
 
                         // Botones principales
                         Row(
@@ -287,10 +212,7 @@ class _PaymentCalculatorScreenState extends State<PaymentCalculatorScreen> {
                                   calcularPagoRapido(empate: true);
                                 }
                               },
-                              child: Text("Empate" ),
-                              style: ElevatedButton.styleFrom(
-                                
-                              ),
+                              child: Text("Empate"),
                             ),
                             ElevatedButton(
                               onPressed: () {
@@ -300,7 +222,9 @@ class _PaymentCalculatorScreenState extends State<PaymentCalculatorScreen> {
                                     final ganadoresController =
                                         TextEditingController();
                                     return AlertDialog(
-                                      title: Text("Ingrese cantidad de ganadores"),
+                                      title: Text(
+                                        "Ingrese cantidad de ganadores",
+                                      ),
                                       content: TextField(
                                         controller: ganadoresController,
                                         keyboardType: TextInputType.number,
@@ -311,12 +235,16 @@ class _PaymentCalculatorScreenState extends State<PaymentCalculatorScreen> {
                                       actions: [
                                         TextButton(
                                           onPressed: () {
-                                            int ganadores = int.tryParse(
-                                                    ganadoresController.text) ??
+                                            int ganadores =
+                                                int.tryParse(
+                                                  ganadoresController.text,
+                                                ) ??
                                                 0;
                                             Navigator.pop(context);
                                             if (ganadores > 0) {
-                                              calcularPagoPersonalizado(ganadores);
+                                              calcularPagoPersonalizado(
+                                                ganadores,
+                                              );
                                             }
                                           },
                                           child: Text("OK"),
@@ -370,15 +298,16 @@ class _PaymentCalculatorScreenState extends State<PaymentCalculatorScreen> {
                                 widget.allPlayers[index],
                                 style: TextStyle(color: Colors.white),
                               ),
-                              trailing: paidStatus[index]
-                                  ? Text(
-                                      "PAGADO",
-                                      style: TextStyle(
-                                        color: Colors.green,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    )
-                                  : SizedBox(),
+                              trailing:
+                                  paidStatus[index]
+                                      ? Text(
+                                        "PAGADO",
+                                        style: TextStyle(
+                                          color: Colors.green,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      )
+                                      : SizedBox(),
                             );
                           },
                         ),
@@ -386,14 +315,11 @@ class _PaymentCalculatorScreenState extends State<PaymentCalculatorScreen> {
                     ),
                   ),
                 ),
-                ),
-            
               ],
+            ),
           ),
         ),
-                         ),
-      ]
+      ],
     );
-      
   }
 }

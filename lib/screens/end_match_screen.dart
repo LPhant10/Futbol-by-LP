@@ -6,9 +6,12 @@ class EndMatchScreen extends StatelessWidget {
   final int pointsTeam1;
   final int pointsTeam2;
   final int pointsTeam3;
+  final int pointsTeam4;
   final String mvpEquipo1;
   final String mvpEquipo2;
   final String mvpEquipo3;
+  final String mvpEquipo4;
+  
 
   // Cantidad total de jugadores que participaron
   final int totalPlayers;
@@ -20,9 +23,13 @@ class EndMatchScreen extends StatelessWidget {
     required this.pointsTeam1,
     required this.pointsTeam2,
     required this.pointsTeam3,
+    required this.pointsTeam4,
+     
     required this.mvpEquipo1,
     required this.mvpEquipo2,
     required this.mvpEquipo3,
+    required this.mvpEquipo4,
+
     required this.totalPlayers,
     required this.allPlayers,
   });
@@ -37,6 +44,8 @@ class EndMatchScreen extends StatelessWidget {
     if (pointsTeam1 == maxPoints) winningTeams.add(1);
     if (pointsTeam2 == maxPoints) winningTeams.add(2);
     if (pointsTeam3 == maxPoints) winningTeams.add(3);
+    if (pointsTeam4 == maxPoints) winningTeams.add(4);
+    
 
     String resultText;
     if (winningTeams.length == 1) {
@@ -74,6 +83,9 @@ class EndMatchScreen extends StatelessWidget {
             Text("Equipo 1: $pointsTeam1", style: TextStyle(fontSize: 20)),
             Text("Equipo 2: $pointsTeam2", style: TextStyle(fontSize: 20)),
             Text("Equipo 3: $pointsTeam3", style: TextStyle(fontSize: 20)),
+             Text("Equipo 4: $pointsTeam4", style: TextStyle(fontSize: 20)),
+           
+
             SizedBox(height: 20),
 
             Text(
@@ -83,6 +95,8 @@ class EndMatchScreen extends StatelessWidget {
             Text("Equipo 1: $mvpEquipo1", style: TextStyle(fontSize: 18)),
             Text("Equipo 2: $mvpEquipo2", style: TextStyle(fontSize: 18)),
             Text("Equipo 3: $mvpEquipo3", style: TextStyle(fontSize: 18)),
+            Text("Equipo 4: $mvpEquipo4", style: TextStyle(fontSize: 18)),
+            
             SizedBox(height: 20),
 
             // BOTÓN para ir a la pantalla de Pagos
