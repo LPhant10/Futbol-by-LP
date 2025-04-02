@@ -5,8 +5,6 @@ import '../services/storage_service.dart';
 import '../services/team_service.dart';
 import '../services/team_storage_service.dart';
 
-
-
 class PlayersGenerateScreen extends StatefulWidget {
   const PlayersGenerateScreen({super.key});
 
@@ -19,8 +17,8 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
   final TextEditingController _ratingController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
 
-  String searchQuery = '';    // Siempre mostrará el TextField de búsqueda
-  bool showPlayers = true;    // Para mostrar/ocultar la lista de jugadores
+  String searchQuery = '';
+  bool showPlayers = true;
 
   List<Player> players = [];
   Map<int, bool> selectedPlayers = {};
@@ -28,7 +26,7 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
 
   int playersPerTeam = 5;
   int numberOfTeams = 2;
-  int maxDifference = 5; // Diferencia máxima deseada
+  int maxDifference = 5;
 
   @override
   void initState() {
@@ -78,75 +76,77 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
     _ratingController.text = player.rating.toString();
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text("Editar jugador"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(labelText: "Nombre"),
+      builder:
+          (_) => AlertDialog(
+            title: Text("Editar jugador"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _nameController,
+                  decoration: InputDecoration(labelText: "Nombre"),
+                ),
+                TextField(
+                  controller: _ratingController,
+                  decoration: InputDecoration(labelText: "Rating"),
+                  keyboardType: TextInputType.number,
+                ),
+              ],
             ),
-            TextField(
-              controller: _ratingController,
-              decoration: InputDecoration(labelText: "Rating"),
-              keyboardType: TextInputType.number,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _nameController.clear();
-              _ratingController.clear();
-            },
-            child: Text("Cancelar"),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _nameController.clear();
+                  _ratingController.clear();
+                },
+                child: Text("Cancelar"),
+              ),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    player.name = _nameController.text.trim();
+                    player.rating =
+                        int.tryParse(_ratingController.text) ?? player.rating;
+                  });
+                  Navigator.pop(context);
+                  _nameController.clear();
+                  _ratingController.clear();
+                  savePlayersList();
+                },
+                child: Text("Guardar"),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                player.name = _nameController.text.trim();
-                player.rating =
-                    int.tryParse(_ratingController.text) ?? player.rating;
-              });
-              Navigator.pop(context);
-              _nameController.clear();
-              _ratingController.clear();
-              savePlayersList();
-            },
-            child: Text("Guardar"),
-          ),
-        ],
-      ),
     );
   }
 
   void deletePlayer(Player player) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text("Eliminar jugador"),
-        content: Text("¿Estás seguro de eliminar a ${player.name}?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Cancelar"),
+      builder:
+          (_) => AlertDialog(
+            title: Text("Eliminar jugador"),
+            content: Text("¿Estás seguro de eliminar a ${player.name}?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text("Cancelar"),
+              ),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    players.removeWhere((p) => p.id == player.id);
+                    selectedPlayers.remove(player.id);
+                    selectedOrder.remove(player.id);
+                  });
+                  Navigator.pop(context);
+                  savePlayersList();
+                },
+                child: Text("Eliminar"),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                players.removeWhere((p) => p.id == player.id);
-                selectedPlayers.remove(player.id);
-                selectedOrder.remove(player.id);
-              });
-              Navigator.pop(context);
-              savePlayersList();
-            },
-            child: Text("Eliminar"),
-          ),
-        ],
-      ),
     );
   }
 
@@ -184,381 +184,472 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
 
       TeamStorageService.saveTeams(teams, leftovers);
 
-    showDialog(
-  context: context,
-  builder: (_) => AlertDialog(
-    title: Text("Equipos Generados", style: TextStyle(color: Colors.red)),
-    content: SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ...teams.asMap().entries.map((entry) {
-            int index = entry.key;
-            var team = entry.value;
-           
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Equipo ${index + 1}",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text("Total de jugadores: ${team.players.length}"),
-                  Text("Arquero: ${team.goalkeeper?.name ?? 'Ninguno'}"),
-                  Text("Puntuación Total: ${team.totalScore}"),
-                  SizedBox(height: 4),
-                  
-                  SizedBox(height: 4),
-                  Text("Jugadores:"),
-                  ...team.players.asMap().entries.map((e) {
-                    int i = e.key;
-                    var p = e.value;
-                    // Si el jugador es el cobrador, se añade el texto "(cobrador)"
-                    String playerText = "  ${i + 1}. ${p.name} - ${p.rating}";
-                    return Text(playerText);
-                  }),
-                ],
+      showDialog(
+        context: context,
+        builder:
+            (_) => AlertDialog(
+              title: Text(
+                "Equipos Generados",
+                style: TextStyle(color: Colors.red),
               ),
-            );
-          }),
-          Text(
-            "Jugadores Sobrantes:",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          if (leftovers.isEmpty)
-            Text("  Ninguno")
-          else
-            ...leftovers.asMap().entries.map((e) {
-              int i = e.key;
-              var p = e.value;
-              return Text("  ${i + 1}. ${p.name} - ${p.rating}");
-            }),
-        ],
-      ),
-    ),
-    actions: [
-      TextButton(
-        onPressed: () => Navigator.pop(context),
-        child: Text("Cerrar"),
-      ),
-    ],
-  ),
-);
-
-
-
-      
+              content: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ...teams.asMap().entries.map((entry) {
+                      int index = entry.key;
+                      var team = entry.value;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Equipo ${index + 1}",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            Text("Total de jugadores: ${team.players.length}"),
+                            Text(
+                              "Arquero: ${team.goalkeeper?.name ?? 'Ninguno'}",
+                            ),
+                            Text("Puntuación Total: ${team.totalScore}"),
+                            SizedBox(height: 4),
+                            Text("Jugadores:"),
+                            ...team.players.asMap().entries.map((e) {
+                              int i = e.key;
+                              var p = e.value;
+                              return Text(
+                                "  ${i + 1}. ${p.name} - ${p.rating}",
+                              );
+                            }),
+                          ],
+                        ),
+                      );
+                    }),
+                    Text(
+                      "Jugadores Sobrantes:",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    if (leftovers.isEmpty)
+                      Text("  Ninguno")
+                    else
+                      ...leftovers.asMap().entries.map((e) {
+                        int i = e.key;
+                        var p = e.value;
+                        return Text("  ${i + 1}. ${p.name} - ${p.rating}");
+                      }),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text("Cerrar"),
+                ),
+              ],
+            ),
+      );
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 
-  // Método auxiliar para contar los jugadores seleccionados.
   int _countSelected() {
     return selectedPlayers.values.where((v) => v).length;
   }
 
-  // --- Widgets para el encabezado fijo ---
-  Widget _buildSliverPersistentHeader(BuildContext context, bool innerBoxIsScrolled) {
-    return Container(
-      color: Colors.white,
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Fila: Encabezado (Jugadores (X) seleccionados) + Cuadro de búsqueda SIEMPRE visible
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Jugadores (${_countSelected()} seleccionados)",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              // Se quita el botón "Busqueda" y se muestra el TextField directamente
-              
-            ],
-          ),
-          SizedBox(
-                width: 250,
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: "Busca tu cojo...",
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                    suffixIcon: IconButton(
-                      icon: Icon(Icons.clear),
-                      onPressed: () {
-                        setState(() {
-                          searchQuery = '';
-                          _searchController.clear();
-                        });
-                      },
-                    ),
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      searchQuery = value;
-                    });
-                  },
-                ),
-              ),
-          SizedBox(height: 8),
-          // Fila: Botones "Ocultar", "Select All" y "Deselect All"
-          Row(
-            children: [
-              TextButton(
-                onPressed: () {
-                  setState(() {
-                    showPlayers = !showPlayers;
-                  });
-                },
-                child: Text(
-                  showPlayers ? "Ocultar" : "Mostrar",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-              TextButton(
-                onPressed: () => selectAll(true),
-                child: Text("Select All"),
-              ),
-              TextButton(
-                onPressed: () => selectAll(false),
-                child: Text("Deselect All"),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Delegate para SliverPersistentHeader
-  SliverPersistentHeaderDelegate _buildSliverDelegate() {
-    return _MySliverDelegate(
-      minHeight: 147,
-      maxHeight: 147,
-      child: _buildSliverPersistentHeader(context, true),
-    );
-  }
-  // --- Fin de widgets de encabezado fijo ---
-
   @override
   Widget build(BuildContext context) {
-    // Filtrar jugadores según búsqueda.
-    List<Player> filteredPlayers = players.where((player) {
-      return player.name.toLowerCase().contains(searchQuery.toLowerCase());
-    }).toList();
+    List<Player> filteredPlayers =
+        players
+            .where(
+              (p) => p.name.toLowerCase().contains(searchQuery.toLowerCase()),
+            )
+            .toList();
 
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: Text("⚽ PICHANGEROS ⚽", style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.blue,
-      ),
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            // Parte superior: Agregar Jugador y Opciones de generación.
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Agregar Jugador",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _nameController,
-                            decoration: InputDecoration(
-                              labelText: "Nombre",
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            controller: _ratingController,
-                            decoration: InputDecoration(
-                              labelText: "Rating",
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.number,
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        ElevatedButton(
-                          onPressed: addPlayer,
-                          child: Text("Agregar"),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      "Opciones de generación",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Text("Jugadores por equipo: "),
-                        DropdownButton<int>(
-                          value: playersPerTeam,
-                          items: [5, 6, 7]
-                              .map((e) => DropdownMenuItem<int>(
-                                    value: e,
-                                    child: Text("$e"),
-                                  ))
-                              .toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              playersPerTeam = value ?? 5;
-                            });
-                          },
-                        ),
-                        SizedBox(width: 16),
-                        Text("Número de equipos: "),
-                        DropdownButton<int>(
-                          value: numberOfTeams,
-                          items: [2, 3, 4]
-                              .map((e) => DropdownMenuItem<int>(
-                                    value: e,
-                                    child: Text("$e"),
-                                  ))
-                              .toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              numberOfTeams = value ?? 2;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Text("Diferencia máxima: "),
-                        DropdownButton<int>(
-                          value: maxDifference,
-                          items: [1, 2, 3, 4, 5]
-                              .map((e) => DropdownMenuItem<int>(
-                                    value: e,
-                                    child: Text("$e"),
-                                  ))
-                              .toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              maxDifference = value ?? 1;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16),
-                  ],
-                ),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.transparent,
+
+        /* appBar: AppBar(
+      title: Text("⚽ PICHANGEROS ⚽", style: TextStyle(color: Colors.white)),
+      backgroundColor: Colors.transparent,
+      
+        ),  */
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.25,
+                child: Image.asset('assets/pichangeros.jpg', fit: BoxFit.cover),
               ),
             ),
-            // Encabezado fijo: Jugadores, búsqueda y botones
-
-
-
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _buildSliverDelegate(),
-            ),
-
-            
-          ];
-        },
-
-
-
-
-        body: CustomScrollView(
-          slivers: [
-            SliverFillRemaining(
-              hasScrollBody: true,
+            SafeArea(
               child: Column(
                 children: [
-                  // Lista de jugadores (scrollable)
-                  if (showPlayers)
-                    Expanded(
-                      child: ListView.builder(
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        itemCount: filteredPlayers.length,
-                        itemBuilder: (context, index) {
-                          final player = filteredPlayers[index];
-                          bool isSelected = selectedPlayers[player.id] ?? false;
-                          int? order = isSelected
-                              ? (selectedOrder.indexOf(player.id) + 1)
-                              : null;
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16.0,
+                      horizontal: 8.0,
+                    ),
+                    child: Row(
+                      children: [
+                        // Botón de retroceso alineado a la izquierda
+                        IconButton(
+                          icon: Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
 
-                          return Card(
-                            child: ListTile(
-                              leading: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Checkbox(
-                                    value: isSelected,
-                                    onChanged: (bool? value) {
+                        // Espacio para centrar el título visualmente
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Icon(Icons.sports_soccer, color: Colors.white),
+                              SizedBox(width: 4),
+                              Text(
+                                "PICHANGEROS",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              SizedBox(width: 4),
+                              Icon(Icons.sports_soccer, color: Colors.white),
+                            ],
+                          ),
+                        ),
+
+                        // Ícono invisible para balancear el espacio del botón de retroceso
+                        Opacity(
+                          opacity: 0,
+                          child: IconButton(
+                            icon: Icon(Icons.arrow_back),
+                            onPressed: () {},
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Encabezado fijo con opciones y agregar jugador
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Opciones de generación",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              "Jugadores por equipo: ",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            DropdownButton<int>(
+                              dropdownColor: Colors.black,
+                              value: playersPerTeam,
+                              items:
+                                  [5, 6, 7]
+                                      .map(
+                                        (e) => DropdownMenuItem<int>(
+                                          value: e,
+                                          child: Text(
+                                            "$e",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                              onChanged:
+                                  (value) => setState(
+                                    () => playersPerTeam = value ?? 5,
+                                  ),
+                            ),
+                            SizedBox(width: 16),
+                            Text(
+                              "Número de equipos: ",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            DropdownButton<int>(
+                              dropdownColor: Colors.black,
+                              value: numberOfTeams,
+                              items:
+                                  [2, 3, 4]
+                                      .map(
+                                        (e) => DropdownMenuItem<int>(
+                                          value: e,
+                                          child: Text(
+                                            "$e",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                              onChanged:
+                                  (value) => setState(
+                                    () => numberOfTeams = value ?? 2,
+                                  ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              "Diferencia máxima: ",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            DropdownButton<int>(
+                              dropdownColor: Colors.black,
+                              value: maxDifference,
+                              items:
+                                  [1, 2, 3, 4, 5]
+                                      .map(
+                                        (e) => DropdownMenuItem<int>(
+                                          value: e,
+                                          child: Text(
+                                            "$e",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                              onChanged:
+                                  (value) => setState(
+                                    () => maxDifference = value ?? 1,
+                                  ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          "Agregar Jugador",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _nameController,
+                                style: TextStyle(color: Colors.white),
+                                decoration: InputDecoration(
+                                  labelText: "Nombre",
+                                  labelStyle: TextStyle(color: Colors.white70),
+                                  filled: true,
+                                  fillColor: Colors.black.withOpacity(0.3),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: TextField(
+                                controller: _ratingController,
+                                style: TextStyle(color: Colors.white),
+                                decoration: InputDecoration(
+                                  labelText: "Rating",
+                                  labelStyle: TextStyle(color: Colors.white70),
+                                  filled: true,
+                                  fillColor: Colors.black.withOpacity(0.3),
+                                ),
+                                keyboardType: TextInputType.number,
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            ElevatedButton(
+                              onPressed: addPlayer,
+                              child: Text("Agregar"),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 12),
+                        Row(
+                          children: [
+                            // Buscador (50%)
+                            Expanded(
+                              flex: 1,
+                              child: TextField(
+                                controller: _searchController,
+                                style: TextStyle(color: Colors.white),
+                                decoration: InputDecoration(
+                                  hintText: "Busca tu cojo...",
+
+                                  hintStyle: TextStyle(color: Colors.white),
+                                  filled: true,
+                                  fillColor: Colors.black.withOpacity(0.3),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      Icons.clear,
+                                      color: Colors.white,
+                                    ),
+                                    onPressed: () {
                                       setState(() {
-                                        selectedPlayers[player.id] = value ?? false;
-                                        if (value == true &&
-                                            !selectedOrder.contains(player.id)) {
-                                          selectedOrder.add(player.id);
-                                        } else if (value == false) {
-                                          selectedOrder.remove(player.id);
-                                        }
+                                        searchQuery = '';
+                                        _searchController.clear();
                                       });
                                     },
                                   ),
-                                  if (isSelected)
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 4.0),
-                                      child: CircleAvatar(
-                                        radius: 12,
-                                        child: Text(
-                                          "$order",
-                                          style: TextStyle(fontSize: 12),
+                                ),
+                                onChanged: (value) {
+                                  setState(() {
+                                    searchQuery = value;
+                                  });
+                                },
+                              ),
+                            ),
+
+                            SizedBox(width: 8),
+
+                            // Botón "Seleccionar Todo"
+                            ElevatedButton(
+                              onPressed: () => selectAll(true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                              ),
+                              child: Text(
+                                " Todo",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(width: 4),
+
+                            // Botón "Deseleccionar Todo"
+                            ElevatedButton(
+                              onPressed: () => selectAll(false),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                              ),
+                              child: Text(
+                                " Ninguno",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          "Jugadores seleccionados: ${_countSelected()}",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Scrollable lista de jugadores
+                  Expanded(
+                    child: ListView.builder(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      itemCount: filteredPlayers.length,
+                      itemBuilder: (context, index) {
+                        final player = filteredPlayers[index];
+                        bool isSelected = selectedPlayers[player.id] ?? false;
+                        int? order =
+                            isSelected
+                                ? (selectedOrder.indexOf(player.id) + 1)
+                                : null;
+
+                        return Card(
+                          color: Colors.black.withOpacity(0.3),
+                          child: ListTile(
+                            leading: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Checkbox(
+                                  value: isSelected,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      selectedPlayers[player.id] =
+                                          value ?? false;
+                                      if (value == true &&
+                                          !selectedOrder.contains(player.id)) {
+                                        selectedOrder.add(player.id);
+                                      } else if (value == false) {
+                                        selectedOrder.remove(player.id);
+                                      }
+                                    });
+                                  },
+                                ),
+                                if (isSelected)
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 4.0),
+                                    child: CircleAvatar(
+                                      radius: 12,
+                                      backgroundColor: Colors.blue,
+                                      child: Text(
+                                        "$order",
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
-                                ],
-                              ),
-                              title: Text(player.name),
-                              subtitle: Text("Rating: ${player.rating}"),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: Icon(Icons.edit),
-                                    onPressed: () => editPlayer(player),
                                   ),
-                                  IconButton(
-                                    icon: Icon(Icons.delete),
-                                    onPressed: () => deletePlayer(player),
-                                  ),
-                                ],
-                              ),
+                              ],
                             ),
-                          );
-                        },
-                      ),
+
+                            title: Text(
+                              player.name,
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            subtitle: Text(
+                              "Rating: ${player.rating}",
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: Icon(Icons.edit, color: Colors.white),
+                                  onPressed: () => editPlayer(player),
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.delete, color: Colors.white),
+                                  onPressed: () => deletePlayer(player),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  // Botón "Generar Equipos" al final (una sola vez)
+                  ),
+
+                  // Botón fijo
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    padding: const EdgeInsets.all(12.0),
                     child: ElevatedButton(
                       onPressed: generateTeamsAction,
                       child: Text("Generar Equipos"),
@@ -574,7 +665,6 @@ class _PlayersGenerateScreenState extends State<PlayersGenerateScreen> {
   }
 }
 
-// Delegate para SliverPersistentHeader
 class _MySliverDelegate extends SliverPersistentHeaderDelegate {
   final double minHeight;
   final double maxHeight;
@@ -593,7 +683,11 @@ class _MySliverDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => maxHeight;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return child;
   }
 

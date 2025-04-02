@@ -144,224 +144,232 @@ class _PaymentCalculatorScreenState extends State<PaymentCalculatorScreen> {
   Widget build(BuildContext context) {
     bool hayUnSoloGanador = (widget.winnersCount == 1);
 
-    return Stack(
-      children: [
-        // Imagen de fondo
-        Positioned.fill(
-          child: Opacity(
-            opacity: 0.3,
-            child: Image.asset("assets/pagos.jpg", fit: BoxFit.cover),
+    return GestureDetector(
+      onTap: () {
+    FocusManager.instance.primaryFocus?.unfocus();
+  },
+      child: Stack(
+        children: [
+          // Imagen de fondo
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.3,
+              child: Image.asset("assets/pagos.jpg", fit: BoxFit.cover),
+            ),
           ),
-        ),
-        Scaffold(
-          backgroundColor: Colors.transparent,
-          /*  appBar: AppBar(
-            title: Text("Calculadora de Pagos by LPhant"),
-            backgroundColor: Colors.red,
-          ), */
-          body: SafeArea(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-
-              children: [
-                IconButton(
-                  icon: Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(25.0),
-                  child: Row(
-                    children: [
-                      SizedBox(height: 25),
-                      Icon(
-                        Icons.monetization_on_outlined,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        'PAGOS ',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                        textAlign: TextAlign.left,
-                      ),
-                      Icon(
-                        Icons.monetization_on_outlined,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                    ],
+          Scaffold(
+            backgroundColor: Colors.transparent,
+            /*  appBar: AppBar(
+              title: Text("Calculadora de Pagos by LPhant"),
+              backgroundColor: Colors.red,
+            ), */
+            body: SafeArea(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+          
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () {
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      Navigator.pop(context);
+                    },
                   ),
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  Padding(
+                    padding: const EdgeInsets.all(25.0),
+                    child: Row(
                       children: [
-                        // Campo "Cantidad de jugadores"
-                        TextField(
-                          controller: jugadoresController,
-                          readOnly: widget.fromEndMatch,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: 'Cantidad de jugadores',
-                            fillColor: Colors.white,
-                            filled: true,
-                          ),
+                        SizedBox(height: 25),
+                        Icon(
+                          Icons.monetization_on_outlined,
+                          color: Colors.white,
+                          size: 30,
                         ),
-                        SizedBox(height: 12),
-                        // Campo "Precio de la cancha"
-                        TextField(
-                          controller: canchaController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: 'Precio de la cancha',
-                            fillColor: Colors.white,
-                            filled: true,
-                          ),
-                        ),
-                        SizedBox(height: 12),
-                        // Campo "Cantidad de apuesta por jugador"
-                        TextField(
-                          controller: apuestaController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: 'Cantidad de apuesta por jugador',
-                            fillColor: Colors.white,
-                            filled: true,
-                          ),
-                        ),
-                        SizedBox(height: 20),
-
-                        // Botones principales
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () {
-                                // Si winnersCount == 1 => “un solo ganador”
-                                // Sino => se asume empate
-                                if (hayUnSoloGanador) {
-                                  calcularPagoRapido(empate: false);
-                                } else {
-                                  calcularPagoRapido(empate: true);
-                                }
-                              },
-                              child: Text("Empate"),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    final ganadoresController =
-                                        TextEditingController();
-                                    return AlertDialog(
-                                      title: Text(
-                                        "Ingrese cantidad de ganadores",
-                                      ),
-                                      content: TextField(
-                                        controller: ganadoresController,
-                                        keyboardType: TextInputType.number,
-                                        decoration: InputDecoration(
-                                          labelText: "N° de ganadores",
-                                        ),
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            int ganadores =
-                                                int.tryParse(
-                                                  ganadoresController.text,
-                                                ) ??
-                                                0;
-                                            Navigator.pop(context);
-                                            if (ganadores > 0) {
-                                              calcularPagoPersonalizado(
-                                                ganadores,
-                                              );
-                                            }
-                                          },
-                                          child: Text("OK"),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
-                              },
-                              child: Text("Gana un equipo"),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 20),
-
-                        // Resultado
+                        SizedBox(width: 8),
                         Text(
-                          resultado,
+                          'PAGOS ',
                           style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 20),
-
-                        // Control de pagos
-                        Text(
-                          "Control de Pagos:",
-                          style: TextStyle(
-                            fontSize: 16,
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
                           ),
+                          textAlign: TextAlign.left,
                         ),
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemCount: widget.allPlayers.length,
-                          itemBuilder: (context, index) {
-                            return ListTile(
-                              leading: Checkbox(
-                                value: paidStatus[index],
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    paidStatus[index] = value ?? false;
-                                  });
-                                },
-                              ),
-                              title: Text(
-                                widget.allPlayers[index],
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              trailing:
-                                  paidStatus[index]
-                                      ? Text(
-                                        "PAGADO",
-                                        style: TextStyle(
-                                          color: Colors.green,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      )
-                                      : SizedBox(),
-                            );
-                          },
+                        Icon(
+                          Icons.monetization_on_outlined,
+                          color: Colors.white,
+                          size: 30,
                         ),
                       ],
                     ),
                   ),
-                ),
-              ],
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Campo "Cantidad de jugadores"
+                          TextField(
+                            controller: jugadoresController,
+                            readOnly: widget.fromEndMatch,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: 'Cantidad de jugadores',
+                              fillColor: Colors.white,
+                              filled: true,
+                            ),
+                          ),
+                          SizedBox(height: 12),
+                          // Campo "Precio de la cancha"
+                          TextField(
+                            controller: canchaController,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: 'Precio de la cancha',
+                              fillColor: Colors.white,
+                              filled: true,
+                            ),
+                          ),
+                          SizedBox(height: 12),
+                          // Campo "Cantidad de apuesta por jugador"
+                          TextField(
+                            controller: apuestaController,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: 'Cantidad de apuesta por jugador',
+                              fillColor: Colors.white,
+                              filled: true,
+                            ),
+                          ),
+                          SizedBox(height: 20),
+          
+                          // Botones principales
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              ElevatedButton(
+                                onPressed: () {
+                                  // Si winnersCount == 1 => “un solo ganador”
+                                  // Sino => se asume empate
+                                  if (hayUnSoloGanador) {
+                                    calcularPagoRapido(empate: false);
+                                  } else {
+                                    calcularPagoRapido(empate: true);
+                                  }
+                                },
+                                child: Text("Empate"),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (dialogContext) {
+                                      final ganadoresController =
+                                          TextEditingController();
+                                      return AlertDialog(
+                                        title: Text(
+                                          "Ingrese cantidad de ganadores",
+                                        ),
+                                        content: TextField(
+                                          controller: ganadoresController,
+                                          keyboardType: TextInputType.number,
+                                          decoration: InputDecoration(
+                                            labelText: "N° de ganadores",
+                                          ),
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () {
+                                              FocusManager.instance.primaryFocus?.unfocus();
+                                              FocusScope.of(dialogContext).unfocus();
+                                              int ganadores =
+                                                  int.tryParse(
+                                                    ganadoresController.text,
+                                                  ) ??
+                                                  0;
+                                              Navigator.pop(context);
+                                              if (ganadores > 0) {
+                                                calcularPagoPersonalizado(
+                                                  ganadores,
+                                                );
+                                              }
+                                            },
+                                            child: Text("OK"),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                },
+                                child: Text("Gana un equipo"),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 20),
+          
+                          // Resultado
+                          Text(
+                            resultado,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 20),
+          
+                          // Control de pagos
+                          Text(
+                            "Control de Pagos:",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: widget.allPlayers.length,
+                            itemBuilder: (context, index) {
+                              return ListTile(
+                                leading: Checkbox(
+                                  value: paidStatus[index],
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      paidStatus[index] = value ?? false;
+                                    });
+                                  },
+                                ),
+                                title: Text(
+                                  widget.allPlayers[index],
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                trailing:
+                                    paidStatus[index]
+                                        ? Text(
+                                          "PAGADO",
+                                          style: TextStyle(
+                                            color: Colors.green,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        )
+                                        : SizedBox(),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

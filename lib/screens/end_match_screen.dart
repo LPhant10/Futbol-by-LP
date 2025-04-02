@@ -7,16 +7,13 @@ class EndMatchScreen extends StatelessWidget {
   final int pointsTeam2;
   final int pointsTeam3;
   final int pointsTeam4;
+
   final String mvpEquipo1;
   final String mvpEquipo2;
   final String mvpEquipo3;
   final String mvpEquipo4;
-  
 
-  // Cantidad total de jugadores que participaron
   final int totalPlayers;
-
-  // Lista con los nombres (o identificadores) de todos los jugadores que jugaron
   final List<String> allPlayers;
 
   EndMatchScreen({
@@ -24,82 +21,72 @@ class EndMatchScreen extends StatelessWidget {
     required this.pointsTeam2,
     required this.pointsTeam3,
     required this.pointsTeam4,
-     
     required this.mvpEquipo1,
     required this.mvpEquipo2,
     required this.mvpEquipo3,
     required this.mvpEquipo4,
-
     required this.totalPlayers,
     required this.allPlayers,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Determinar el máximo de puntos
-    int maxPoints = [pointsTeam1, pointsTeam2, pointsTeam3].reduce(max);
+    // Crear listas dinámicas
+    List<int> puntos = [pointsTeam1, pointsTeam2, pointsTeam3, pointsTeam4];
+    List<String> mvps = [mvpEquipo1, mvpEquipo2, mvpEquipo3, mvpEquipo4];
 
-    // Crear una lista con los números de equipo que alcanzaron maxPoints
-    List<int> winningTeams = [];
-    if (pointsTeam1 == maxPoints) winningTeams.add(1);
-    if (pointsTeam2 == maxPoints) winningTeams.add(2);
-    if (pointsTeam3 == maxPoints) winningTeams.add(3);
-    if (pointsTeam4 == maxPoints) winningTeams.add(4);
-    
-
-    String resultText;
-    if (winningTeams.length == 1) {
-      resultText = "¡Equipo ${winningTeams.first} gana el encuentro!";
-    } else {
-      // Si hay empate, listamos los equipos
-      resultText = "Empate entre los equipos: " + winningTeams.join(" y ");
+    // Solo mostrar los equipos que jugaron (que tienen MVP)
+    List<int> equiposJugados = [];
+    for (int i = 0; i < mvps.length; i++) {
+      if (mvps[i] != "Ninguno") {
+        equiposJugados.add(i); // índice 0 = Equipo 1
+      }
     }
 
-    // Si solo 1 equipo gana => winnersCount = 1; si hay 2 o 3 empatados => winnersCount = 2 o 3
+    // Determinar los ganadores
+    int maxPoints = equiposJugados.isNotEmpty
+        ? equiposJugados.map((i) => puntos[i]).reduce(max)
+        : 0;
+
+    List<int> winningTeams = equiposJugados
+        .where((i) => puntos[i] == maxPoints)
+        .map((i) => i + 1)
+        .toList();
+
+    String resultText = (winningTeams.length == 1)
+        ? "¡Equipo ${winningTeams.first} gana el encuentro!"
+        : "Empate entre los equipos: ${winningTeams.join(" y ")}";
+
     int winnersCount = (winningTeams.length == 1) ? 1 : winningTeams.length;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "⚽ Resultado Final ⚽",
-          style: TextStyle(color: Colors.white),
-        ),
+        title: Text("⚽ Resultado Final ⚽", style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.blue,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Text(
-              resultText,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
+            Text(resultText, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             SizedBox(height: 20),
 
-            Text(
-              "Puntos Acumulados:",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            Text("Equipo 1: $pointsTeam1", style: TextStyle(fontSize: 20)),
-            Text("Equipo 2: $pointsTeam2", style: TextStyle(fontSize: 20)),
-            Text("Equipo 3: $pointsTeam3", style: TextStyle(fontSize: 20)),
-             Text("Equipo 4: $pointsTeam4", style: TextStyle(fontSize: 20)),
-           
+            Text("Puntos Acumulados:", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            ...equiposJugados.map((index) => Text(
+              "Equipo ${index + 1}: ${puntos[index]}",
+              style: TextStyle(fontSize: 20),
+            )),
 
             SizedBox(height: 20),
 
-            Text(
-              "MVP de cada equipo:",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            Text("Equipo 1: $mvpEquipo1", style: TextStyle(fontSize: 18)),
-            Text("Equipo 2: $mvpEquipo2", style: TextStyle(fontSize: 18)),
-            Text("Equipo 3: $mvpEquipo3", style: TextStyle(fontSize: 18)),
-            Text("Equipo 4: $mvpEquipo4", style: TextStyle(fontSize: 18)),
-            
+            Text("MVP de cada equipo:", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            ...equiposJugados.map((index) => Text(
+              "Equipo ${index + 1}: ${mvps[index]}",
+              style: TextStyle(fontSize: 18),
+            )),
+
             SizedBox(height: 20),
 
-            // BOTÓN para ir a la pantalla de Pagos
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -107,9 +94,9 @@ class EndMatchScreen extends StatelessWidget {
                   MaterialPageRoute(
                     builder: (_) => PaymentCalculatorScreen(
                       initialPlayers: totalPlayers,
-                      fromEndMatch: true, // Bloquea la edición de "Cantidad de jugadores"
-                      winnersCount: winnersCount, // 1 = un solo ganador, 2+ = empate
-                      allPlayers: allPlayers, // Pasamos la lista de jugadores
+                      fromEndMatch: true,
+                      winnersCount: winnersCount,
+                      allPlayers: allPlayers,
                     ),
                   ),
                 );
@@ -119,10 +106,7 @@ class EndMatchScreen extends StatelessWidget {
 
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                // Regresamos al inicio
-                Navigator.pop(context);
-              },
+              onPressed: () => Navigator.pop(context),
               child: Text("Volver al Inicio"),
             ),
           ],
